@@ -34,11 +34,29 @@ button{border:0;border-radius:9px;padding:11px;font-size:14px;font-weight:bold;c
 .table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:900px}th,td{text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;font-size:13px}
 th{background:#f9fafb}.empty{text-align:center;color:#9ca3af;padding:18px}
 footer{text-align:center;color:#6b7280;font-size:12px;padding:22px}
+.auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#111827,#374151)}
+.auth-box{width:min(430px,100%);background:#fff;border-radius:20px;padding:28px;box-shadow:0 15px 45px #0005}.auth-box h1{color:#111827;margin-bottom:6px}.auth-box p{color:#6b7280;font-size:14px}.auth-box input{margin-bottom:8px}.auth-btn{background:#111827;color:#fff;width:100%;margin-top:12px}.auth-secondary{background:#e5e7eb;color:#111827;width:100%;margin-top:8px}.auth-msg{font-size:13px;min-height:18px;margin-top:10px;color:#b91c1c}.userbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;padding:10px 14px;background:#fff;border-radius:12px;box-shadow:0 3px 12px #0000000a}.logout{background:#fee2e2;color:#991b1b;margin:0}.role-badge{font-size:12px;background:#e5e7eb;padding:5px 9px;border-radius:20px}
 @media(max-width:750px){.grid,.summary{grid-template-columns:1fr}.container{padding:10px}.material{padding:13px}h1{font-size:23px}.material-title{align-items:flex-start;gap:8px;flex-direction:column}}
 </style>
 </head>
 <body>
+<div id="authScreen" class="auth-screen">
+  <div class="auth-box">
+    <h1>📦 Stok Bahan Banner</h1>
+    <p id="authTitle">Login untuk membuka dashboard stok.</p>
+    <label>Email</label>
+    <input id="authEmail" type="email" placeholder="nama@email.com" autocomplete="email">
+    <label>Password</label>
+    <input id="authPassword" type="password" placeholder="Minimal 6 karakter" autocomplete="current-password">
+    <button class="auth-btn" id="loginBtn" onclick="login()">🔐 Login</button>
+    <button class="auth-secondary" id="signupBtn" onclick="signup()">➕ Buat Akun Karyawan</button>
+    <div id="authMsg" class="auth-msg"></div>
+  </div>
+</div>
+
+<div id="appScreen" style="display:none">
 <div class="container">
+<div class="userbar"><div>👤 <strong id="userEmail"></strong> <span id="roleBadge" class="role-badge"></span></div><button class="logout" onclick="logout()">Keluar</button></div>
 <header>
 <h1>📦 STOK BAHAN BANNER</h1>
 <div class="subtitle">Stok per rol — setiap rol berisi 70 meter</div>
@@ -66,6 +84,7 @@ footer{text-align:center;color:#6b7280;font-size:12px;padding:22px}
 </div>
 <footer>Data tersimpan online di Supabase, sehingga stok dan riwayat dapat dibuka dari HP maupun komputer. Export Excel menghasilkan file .xlsx.</footer>
 </div>
+</div>
 
 <script>
 const INITIAL=70;
@@ -74,6 +93,58 @@ const sizes=["1 Meter","2 Meter","3 Meter"];
 const SUPABASE_URL="https://oafeipboodvriapygvmq.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_7ixFQqPozdCSLZhrbjpRUg_8zeHE9CS";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+let currentUser=null;
+let currentRole="karyawan";
+
+function setAuthMsg(msg,isOk=false){const el=document.getElementById("authMsg");el.textContent=msg;el.style.color=isOk?"#15803d":"#b91c1c"}
+
+async function login(){
+  const email=document.getElementById("authEmail").value.trim();
+  const password=document.getElementById("authPassword").value;
+  if(!email||!password){setAuthMsg("Isi email dan password.");return}
+  setAuthMsg("Sedang login...",true);
+  const {data,error}=await db.auth.signInWithPassword({email,password});
+  if(error){setAuthMsg(error.message);return}
+  await startApp(data.user);
+}
+
+async function signup(){
+  const email=document.getElementById("authEmail").value.trim();
+  const password=document.getElementById("authPassword").value;
+  if(!email||!password){setAuthMsg("Isi email dan password.");return}
+  if(password.length<6){setAuthMsg("Password minimal 6 karakter.");return}
+  setAuthMsg("Membuat akun...",true);
+  const {data,error}=await db.auth.signUp({email,password});
+  if(error){setAuthMsg(error.message);return}
+  if(data.session){await startApp(data.user)}
+  else setAuthMsg("Akun dibuat. Cek email untuk verifikasi, lalu login.",true);
+}
+
+async function logout(){await db.auth.signOut();currentUser=null;currentRole="karyawan";document.getElementById("appScreen").style.display="none";document.getElementById("authScreen").style.display="flex";setAuthMsg("Anda sudah keluar.",true)}
+
+async function getRole(user){
+  const {data,error}=await db.from("profiles").select("role").eq("id",user.id).single();
+  if(error){console.error(error);return "karyawan"}
+  return data?.role||"karyawan";
+}
+
+async function startApp(user){
+  currentUser=user;
+  currentRole=await getRole(user);
+  document.getElementById("userEmail").textContent=user.email||"User";
+  document.getElementById("roleBadge").textContent=currentRole.toUpperCase();
+  document.getElementById("authScreen").style.display="none";
+  document.getElementById("appScreen").style.display="block";
+  await loadData();
+}
+
+async function initAuth(){
+  const {data}=await db.auth.getSession();
+  if(data.session) await startApp(data.session.user);
+  db.auth.onAuthStateChange(async (event,session)=>{
+    if(event==="SIGNED_IN" && session && !currentUser) await startApp(session.user);
+  });
+}
 
 let data={};
 let stockRows=[];
@@ -156,7 +227,7 @@ function render(){
        <label>Keterangan / Banner untuk apa?</label>
        <input id="purpose-${m}-${s}" type="text" maxlength="100" placeholder="Contoh: Banner Toko / Nama Pelanggan">
        <button class="use" onclick="useStock('${m}','${s}')">➖ Kurangi Stok & Simpan</button>
-       <button class="reset" onclick="resetStock('${m}','${s}')">🔄 Reset ke 70 Meter</button>
+       ${currentRole==="admin"?`<button class="reset" onclick="resetStock('${m}','${s}')">🔄 Reset ke 70 Meter</button>`:""}
      </div>`;
    });
  });
@@ -171,27 +242,9 @@ async function useStock(m,s){
  if(!amount||amount<=0){alert("Masukkan jumlah meter yang valid.");return}
  if(amount>data[m][s].stock){alert("Stok tidak mencukupi.");return}
  if(!ket){alert("Isi keterangan banner digunakan untuk apa.");purpose.focus();return}
-
- const rol=sizes.indexOf(s)+1;
- const row=stockRows.find(r=>String(r.ukuran_cm)===m && Number(r.rol)===rol);
- if(!row){alert("Data rol tidak ditemukan di Supabase.");return}
-
- const oldStock=Number(row.stok_meter ?? data[m][s].stock);
- if(amount>oldStock){alert("Stok tidak mencukupi. Silakan refresh halaman.");await loadData();return}
- const newStock=Math.round((oldStock-amount)*100)/100;
-
  try{
-   const {error:updateError}=await db.from("banner_stock").update({stok_meter:newStock}).eq("id",row.id);
-   if(updateError) throw updateError;
-
-   const {error:insertError}=await db.from("banner_transactions").insert({
-     ukuran_cm:Number(m),rol:rol,jenis:"terpakai",meter:amount,keterangan:ket,sisa_stok:newStock
-   });
-   if(insertError){
-     await db.from("banner_stock").update({stok_meter:oldStock}).eq("id",row.id);
-     throw insertError;
-   }
-
+   const {error}=await db.rpc("use_banner_stock",{p_ukuran_cm:Number(m),p_rol:sizes.indexOf(s)+1,p_meter:amount,p_keterangan:ket});
+   if(error) throw error;
    input.value="";purpose.value="";
    await loadData();
  }catch(err){
@@ -201,22 +254,11 @@ async function useStock(m,s){
 }
 
 async function resetStock(m,s){
+ if(currentRole!=="admin"){alert("Hanya Admin yang boleh mereset stok.");return}
  if(!confirm(`Reset stok bahan ${m} ukuran ${s} kembali menjadi 70 meter?`)) return;
- const rol=sizes.indexOf(s)+1;
- const row=stockRows.find(r=>String(r.ukuran_cm)===m && Number(r.rol)===rol);
- if(!row){alert("Data rol tidak ditemukan di Supabase.");return}
- const oldStock=Number(row.stok_meter ?? data[m][s].stock);
  try{
-   const {error:updateError}=await db.from("banner_stock").update({stok_meter:INITIAL}).eq("id",row.id);
-   if(updateError) throw updateError;
-
-   const {error:insertError}=await db.from("banner_transactions").insert({
-     ukuran_cm:Number(m),rol:rol,jenis:"reset",meter:0,keterangan:"Reset stok / Rol baru",sisa_stok:INITIAL
-   });
-   if(insertError){
-     await db.from("banner_stock").update({stok_meter:oldStock}).eq("id",row.id);
-     throw insertError;
-   }
+   const {error}=await db.rpc("reset_banner_stock",{p_ukuran_cm:Number(m),p_rol:sizes.indexOf(s)+1});
+   if(error) throw error;
    await loadData();
  }catch(err){
    console.error(err);
@@ -269,9 +311,10 @@ function exportExcel(){
 function sumMaterial(m){let n=0;sizes.forEach(s=>n+=Number(data[m][s].stock||0));return n}
 
 async function clearHistory(){
+ if(currentRole!=="admin"){alert("Hanya Admin yang boleh menghapus riwayat.");return}
  if(!confirm("Hapus semua riwayat pemakaian? Stok tidak akan berubah.")) return;
  try{
-   const {error}=await db.from("banner_transactions").delete().not("id","is",null);
+   const {error}=await db.rpc("clear_banner_history");
    if(error) throw error;
    await loadData();
  }catch(err){
@@ -280,8 +323,7 @@ async function clearHistory(){
  }
 }
 
-emptyData();
-loadData();
+initAuth();
 </script>
 </body>
 </html>
