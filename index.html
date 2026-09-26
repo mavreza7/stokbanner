@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#111827">
 <title>Stok Bahan Banner</title>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f4f6;color:#111827}
-.container{max-width:1100px;margin:auto;padding:16px}
+.container{max-width:1150px;margin:auto;padding:16px}
 header{background:linear-gradient(135deg,#111827,#374151);color:#fff;border-radius:20px;padding:22px;margin-bottom:18px;box-shadow:0 8px 25px #0002}
 h1{margin:0 0 5px;font-size:27px}.subtitle{opacity:.82}
 .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
@@ -23,13 +24,14 @@ h1{margin:0 0 5px;font-size:27px}.subtitle{opacity:.82}
 .meter{height:12px;background:#e5e7eb;border-radius:20px;overflow:hidden;margin:12px 0}.bar{height:100%;background:#16a34a;transition:.3s}.bar.low{background:#f59e0b}.bar.empty{background:#dc2626}
 small{color:#6b7280}
 label{font-size:12px;color:#4b5563;font-weight:bold;display:block;margin:12px 0 5px}
-input{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:9px;font-size:16px}
+input,select{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:9px;font-size:15px;background:white}
 button{border:0;border-radius:9px;padding:11px;font-size:14px;font-weight:bold;cursor:pointer;margin-top:8px}
 .use{background:#111827;color:white;width:100%}.reset{background:#fee2e2;color:#991b1b;width:100%}
 .history{background:#fff;border-radius:18px;padding:18px;box-shadow:0 5px 20px #0000000c}.history h2{margin-top:0}
-.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:650px}th,td{text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;font-size:13px}
-.empty{text-align:center;color:#9ca3af;padding:18px}
-.clear{background:#fee2e2;color:#991b1b;margin-bottom:12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.actions button{margin:0}
+.excel{background:#15803d;color:white}.clear{background:#fee2e2;color:#991b1b}
+.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:900px}th,td{text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;font-size:13px}
+th{background:#f9fafb}.empty{text-align:center;color:#9ca3af;padding:18px}
 footer{text-align:center;color:#6b7280;font-size:12px;padding:22px}
 @media(max-width:750px){.grid,.summary{grid-template-columns:1fr}.container{padding:10px}.material{padding:13px}h1{font-size:23px}.material-title{align-items:flex-start;gap:8px;flex-direction:column}}
 </style>
@@ -45,29 +47,37 @@ footer{text-align:center;color:#6b7280;font-size:12px;padding:22px}
 <div>Total Terpakai<strong id="totalPakai">0 m</strong></div>
 </div>
 </header>
+
 <div id="materials"></div>
+
 <div class="history">
-<h2>📋 Riwayat Pemakaian</h2>
+<h2>📋 Tabel Pemakaian Banner</h2>
+<div class="actions">
+<button class="excel" onclick="exportExcel()">📊 Simpan / Export ke Excel</button>
 <button class="clear" onclick="clearHistory()">🗑️ Hapus Riwayat</button>
-<div class="table-wrap"><table>
-<thead><tr><th>Tanggal</th><th>Bahan</th><th>Ukuran</th><th>Pemakaian</th><th>Sisa</th></tr></thead>
+</div>
+<p style="font-size:13px;color:#6b7280">Setiap pemakaian dicatat dengan bahan, ukuran, jumlah meter, dan keterangan banner digunakan untuk apa.</p>
+<div class="table-wrap"><table id="historyTable">
+<thead><tr><th>No</th><th>Tanggal</th><th>Bahan</th><th>Ukuran</th><th>Pemakaian</th><th>Keterangan / Untuk</th><th>Sisa Stok</th></tr></thead>
 <tbody id="history"></tbody>
 </table></div>
 <div id="empty" class="empty">Belum ada pemakaian.</div>
 </div>
-<footer>Data stok tersimpan otomatis di browser perangkat ini.</footer>
+<footer>Data tersimpan otomatis di browser. Export Excel menghasilkan file .xlsx yang bisa dibuka di Microsoft Excel, WPS, atau Google Sheets.</footer>
 </div>
+
 <script>
 const INITIAL=70;
 const materials=["280","340","440","510"];
 const sizes=["1 Meter","2 Meter","3 Meter"];
-let data=JSON.parse(localStorage.getItem("stokBahanBanner"))||{};
+let data=JSON.parse(localStorage.getItem("stokBahanBannerV2"))||{};
 materials.forEach(m=>{
  if(!data[m]) data[m]={};
  sizes.forEach(s=>{if(!data[m][s]) data[m][s]={stock:70,history:[]};});
 });
-function save(){localStorage.setItem("stokBahanBanner",JSON.stringify(data))}
+function save(){localStorage.setItem("stokBahanBannerV2",JSON.stringify(data))}
 function fmt(n){return Number(n).toFixed(2).replace(/\.00$/,"")}
+
 function render(){
  let total=0; materials.forEach(m=>sizes.forEach(s=>total+=data[m][s].stock));
  document.getElementById("totalSisa").textContent=fmt(total)+" m";
@@ -76,7 +86,7 @@ function render(){
  materials.forEach(m=>{
    let mt=0;sizes.forEach(s=>mt+=data[m][s].stock);
    let section=document.createElement("section");section.className="material";
-   section.innerHTML=`<div class="material-title"><h2>BAHAN ${m}</h2><div class="total-material">Total tersisa: ${fmt(mt)} m</div></div><div class="grid" id="grid-${m}"></div>`;
+   section.innerHTML=`<div class="material-title"><h2>BAHAN ${m}</h2><div class="total-material">Total tersisa: ${fmt(mt)} m</div></div><div class="grid"></div>`;
    wrap.appendChild(section);
    const grid=section.querySelector(".grid");
    sizes.forEach(s=>{
@@ -91,36 +101,94 @@ function render(){
        <small>${fmt(pct)}% dari 70 meter tersisa</small>
        <label>Panjang pemakaian (meter)</label>
        <input id="input-${m}-${s}" type="number" min="0.01" max="${item.stock}" step="0.01" placeholder="Contoh: 2.5">
-       <button class="use" onclick="useStock('${m}','${s}')">➖ Kurangi Stok</button>
+       <label>Keterangan / Banner untuk apa?</label>
+       <input id="purpose-${m}-${s}" type="text" maxlength="100" placeholder="Contoh: Banner Toko / Nama Pelanggan">
+       <button class="use" onclick="useStock('${m}','${s}')">➖ Kurangi Stok & Simpan</button>
        <button class="reset" onclick="resetStock('${m}','${s}')">🔄 Reset ke 70 Meter</button>
      </div>`;
    });
  });
  renderHistory();
 }
+
 function useStock(m,s){
- const input=document.getElementById(`input-${m}-${s}`), amount=parseFloat(input.value);
+ const input=document.getElementById(`input-${m}-${s}`);
+ const purpose=document.getElementById(`purpose-${m}-${s}`);
+ const amount=parseFloat(input.value);
+ const ket=purpose.value.trim();
  if(!amount||amount<=0){alert("Masukkan jumlah meter yang valid.");return}
  if(amount>data[m][s].stock){alert("Stok tidak mencukupi.");return}
+ if(!ket){alert("Isi keterangan banner digunakan untuk apa.");purpose.focus();return}
  data[m][s].stock=Math.round((data[m][s].stock-amount)*100)/100;
- data[m][s].history.unshift({date:new Date().toLocaleString("id-ID"),amount,remaining:data[m][s].stock});
+ data[m][s].history.push({
+   date:new Date().toLocaleString("id-ID"),
+   amount:amount,
+   purpose:ket,
+   remaining:data[m][s].stock
+ });
  save();render();
 }
+
 function resetStock(m,s){
  if(confirm(`Reset stok bahan ${m} ukuran ${s} kembali menjadi 70 meter?`)){
    data[m][s].stock=INITIAL;
-   data[m][s].history.unshift({date:new Date().toLocaleString("id-ID"),amount:"RESET",remaining:INITIAL});
+   data[m][s].history.push({
+     date:new Date().toLocaleString("id-ID"),
+     amount:"RESET",
+     purpose:"Reset stok / Rol baru",
+     remaining:INITIAL
+   });
    save();render();
  }
 }
-function renderHistory(){
+
+function getRows(){
  let rows=[];
- materials.forEach(m=>sizes.forEach(s=>data[m][s].history.forEach(h=>rows.push({m,s,...h}))));
- rows.reverse();
+ materials.forEach(m=>sizes.forEach(s=>data[m][s].history.forEach(h=>rows.push({
+   date:h.date,m,s,amount:h.amount,purpose:h.purpose||"",remaining:h.remaining
+ }))));
+ return rows;
+}
+
+function renderHistory(){
+ const rows=getRows();
  const tbody=document.getElementById("history");
- tbody.innerHTML=rows.map(h=>`<tr><td>${h.date}</td><td>Banner ${h.m}</td><td>${h.s}</td><td>${h.amount==="RESET"?"Reset stok":"-"+fmt(h.amount)+" m"}</td><td>${fmt(h.remaining)} m</td></tr>`).join("");
+ tbody.innerHTML=rows.map((h,i)=>`
+ <tr><td>${i+1}</td><td>${h.date}</td><td>Banner ${h.m}</td><td>${h.s}</td>
+ <td>${h.amount==="RESET"?"RESET":"-"+fmt(h.amount)+" m"}</td>
+ <td>${escapeHtml(h.purpose)}</td><td>${fmt(h.remaining)} m</td></tr>`).join("");
  document.getElementById("empty").style.display=rows.length?"none":"block";
 }
+function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+
+function exportExcel(){
+ const rows=getRows();
+ if(!rows.length){alert("Belum ada data pemakaian untuk diexport.");return}
+ const excelRows=rows.map((h,i)=>({
+   "No":i+1,
+   "Tanggal":h.date,
+   "Bahan":"Banner "+h.m,
+   "Ukuran":h.s,
+   "Pemakaian":h.amount==="RESET"?"RESET":Number(h.amount),
+   "Keterangan / Untuk":h.purpose,
+   "Sisa Stok (Meter)":Number(h.remaining)
+ }));
+ const ws=XLSX.utils.json_to_sheet(excelRows);
+ ws["!cols"]=[{wch:6},{wch:22},{wch:15},{wch:14},{wch:15},{wch:35},{wch:18}];
+ const wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,ws,"Riwayat Stok");
+ const summary=[
+   {"Bahan":"Banner 280","Stok Awal (m)":210,"Stok Tersisa (m)":sumMaterial("280"),"Terpakai (m)":210-sumMaterial("280")},
+   {"Bahan":"Banner 340","Stok Awal (m)":210,"Stok Tersisa (m)":sumMaterial("340"),"Terpakai (m)":210-sumMaterial("340")},
+   {"Bahan":"Banner 440","Stok Awal (m)":210,"Stok Tersisa (m)":sumMaterial("440"),"Terpakai (m)":210-sumMaterial("440")},
+   {"Bahan":"Banner 510","Stok Awal (m)":210,"Stok Tersisa (m)":sumMaterial("510"),"Terpakai (m)":210-sumMaterial("510")}
+ ];
+ const ws2=XLSX.utils.json_to_sheet(summary);
+ ws2["!cols"]=[{wch:18},{wch:18},{wch:20},{wch:18}];
+ XLSX.utils.book_append_sheet(wb,ws2,"Ringkasan Stok");
+ XLSX.writeFile(wb,"Laporan_Stok_Banner.xlsx");
+}
+function sumMaterial(m){let n=0;sizes.forEach(s=>n+=data[m][s].stock);return n}
 function clearHistory(){
  if(confirm("Hapus semua riwayat pemakaian? Stok tidak akan berubah.")){
    materials.forEach(m=>sizes.forEach(s=>data[m][s].history=[]));save();render();
