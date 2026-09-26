@@ -64,34 +64,85 @@ footer{text-align:center;color:#6b7280;font-size:12px;padding:22px}
 </table></div>
 <div id="empty" class="empty">Belum ada pemakaian.</div>
 </div>
-<footer>Data tersimpan otomatis di browser. Export Excel menghasilkan file .xlsx yang bisa dibuka di Microsoft Excel, WPS, atau Google Sheets.</footer>
+<footer>Data tersimpan online di Supabase, sehingga stok dan riwayat dapat dibuka dari HP maupun komputer. Export Excel menghasilkan file .xlsx.</footer>
 </div>
 
 <script>
 const INITIAL=70;
 const materials=["280","340","440","510"];
 const sizes=["1 Meter","2 Meter","3 Meter"];
-let data=JSON.parse(localStorage.getItem("stokBahanBannerV2"))||{};
-materials.forEach(m=>{
- if(!data[m]) data[m]={};
- sizes.forEach(s=>{if(!data[m][s]) data[m][s]={stock:70,history:[]};});
-});
-function save(){localStorage.setItem("stokBahanBannerV2",JSON.stringify(data))}
-function fmt(n){return Number(n).toFixed(2).replace(/\.00$/,"")}
+const SUPABASE_URL="https://oafeipboodvriapygvmq.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_7ixFQqPozdCSLZhrbjpRUg_8zeHE9CS";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+
+let data={};
+let stockRows=[];
+
+function emptyData(){
+ data={};
+ materials.forEach(m=>{
+   data[m]={};
+   sizes.forEach(s=>data[m][s]={stock:INITIAL,history:[]});
+ });
+}
+
+function fmt(n){return Number(n||0).toFixed(2).replace(/\.00$/,"")}
+
+async function loadData(){
+ try{
+   const [stockRes,txRes]=await Promise.all([
+     db.from("banner_stock").select("id,ukuran_cm,rol,meter_per_rol,stok_awal,stok_meter"),
+     db.from("banner_transactions").select("id,ukuran_cm,rol,jenis,meter,keterangan,sisa_stok,created_at").order("created_at",{ascending:true})
+   ]);
+   if(stockRes.error) throw stockRes.error;
+   if(txRes.error) throw txRes.error;
+
+   stockRows=stockRes.data||[];
+   emptyData();
+
+   stockRows.forEach(r=>{
+     const m=String(r.ukuran_cm);
+     const idx=Number(r.rol)-1;
+     if(data[m] && sizes[idx]) data[m][sizes[idx]].stock=Number(r.stok_meter ?? r.stok_awal ?? INITIAL);
+   });
+
+   (txRes.data||[]).forEach(t=>{
+     const m=String(t.ukuran_cm);
+     const idx=Number(t.rol)-1;
+     const s=sizes[idx];
+     if(data[m] && s){
+       data[m][s].history.push({
+         date:new Date(t.created_at).toLocaleString("id-ID"),
+         amount:t.jenis==="reset"?"RESET":Number(t.meter||0),
+         purpose:t.keterangan||"",
+         remaining:Number(t.sisa_stok ?? 0)
+       });
+     }
+   });
+
+   render();
+ }catch(err){
+   console.error(err);
+   alert("Gagal mengambil data dari Supabase. Cek koneksi dan pengaturan tabel/RLS.");
+ }
+}
 
 function render(){
- let total=0; materials.forEach(m=>sizes.forEach(s=>total+=data[m][s].stock));
+ let total=0;
+ materials.forEach(m=>sizes.forEach(s=>total+=Number(data[m][s].stock||0)));
  document.getElementById("totalSisa").textContent=fmt(total)+" m";
  document.getElementById("totalPakai").textContent=fmt(840-total)+" m";
- const wrap=document.getElementById("materials"); wrap.innerHTML="";
+ const wrap=document.getElementById("materials");
+ wrap.innerHTML="";
  materials.forEach(m=>{
-   let mt=0;sizes.forEach(s=>mt+=data[m][s].stock);
+   let mt=0;sizes.forEach(s=>mt+=Number(data[m][s].stock||0));
    let section=document.createElement("section");section.className="material";
    section.innerHTML=`<div class="material-title"><h2>BAHAN ${m}</h2><div class="total-material">Total tersisa: ${fmt(mt)} m</div></div><div class="grid"></div>`;
    wrap.appendChild(section);
    const grid=section.querySelector(".grid");
    sizes.forEach(s=>{
-     const item=data[m][s], pct=Math.max(0,Math.min(100,item.stock/INITIAL*100));
+     const item=data[m][s];
+     const pct=Math.max(0,Math.min(100,item.stock/INITIAL*100));
      const cls=pct<=0?"empty":pct<=25?"low":"";
      grid.innerHTML+=`
      <div class="card">
@@ -112,7 +163,7 @@ function render(){
  renderHistory();
 }
 
-function useStock(m,s){
+async function useStock(m,s){
  const input=document.getElementById(`input-${m}-${s}`);
  const purpose=document.getElementById(`purpose-${m}-${s}`);
  const amount=parseFloat(input.value);
@@ -120,26 +171,56 @@ function useStock(m,s){
  if(!amount||amount<=0){alert("Masukkan jumlah meter yang valid.");return}
  if(amount>data[m][s].stock){alert("Stok tidak mencukupi.");return}
  if(!ket){alert("Isi keterangan banner digunakan untuk apa.");purpose.focus();return}
- data[m][s].stock=Math.round((data[m][s].stock-amount)*100)/100;
- data[m][s].history.push({
-   date:new Date().toLocaleString("id-ID"),
-   amount:amount,
-   purpose:ket,
-   remaining:data[m][s].stock
- });
- save();render();
+
+ const rol=sizes.indexOf(s)+1;
+ const row=stockRows.find(r=>String(r.ukuran_cm)===m && Number(r.rol)===rol);
+ if(!row){alert("Data rol tidak ditemukan di Supabase.");return}
+
+ const oldStock=Number(row.stok_meter ?? data[m][s].stock);
+ if(amount>oldStock){alert("Stok tidak mencukupi. Silakan refresh halaman.");await loadData();return}
+ const newStock=Math.round((oldStock-amount)*100)/100;
+
+ try{
+   const {error:updateError}=await db.from("banner_stock").update({stok_meter:newStock}).eq("id",row.id);
+   if(updateError) throw updateError;
+
+   const {error:insertError}=await db.from("banner_transactions").insert({
+     ukuran_cm:Number(m),rol:rol,jenis:"terpakai",meter:amount,keterangan:ket,sisa_stok:newStock
+   });
+   if(insertError){
+     await db.from("banner_stock").update({stok_meter:oldStock}).eq("id",row.id);
+     throw insertError;
+   }
+
+   input.value="";purpose.value="";
+   await loadData();
+ }catch(err){
+   console.error(err);
+   alert("Gagal menyimpan pemakaian: "+(err.message||"Error Supabase"));
+ }
 }
 
-function resetStock(m,s){
- if(confirm(`Reset stok bahan ${m} ukuran ${s} kembali menjadi 70 meter?`)){
-   data[m][s].stock=INITIAL;
-   data[m][s].history.push({
-     date:new Date().toLocaleString("id-ID"),
-     amount:"RESET",
-     purpose:"Reset stok / Rol baru",
-     remaining:INITIAL
+async function resetStock(m,s){
+ if(!confirm(`Reset stok bahan ${m} ukuran ${s} kembali menjadi 70 meter?`)) return;
+ const rol=sizes.indexOf(s)+1;
+ const row=stockRows.find(r=>String(r.ukuran_cm)===m && Number(r.rol)===rol);
+ if(!row){alert("Data rol tidak ditemukan di Supabase.");return}
+ const oldStock=Number(row.stok_meter ?? data[m][s].stock);
+ try{
+   const {error:updateError}=await db.from("banner_stock").update({stok_meter:INITIAL}).eq("id",row.id);
+   if(updateError) throw updateError;
+
+   const {error:insertError}=await db.from("banner_transactions").insert({
+     ukuran_cm:Number(m),rol:rol,jenis:"reset",meter:0,keterangan:"Reset stok / Rol baru",sisa_stok:INITIAL
    });
-   save();render();
+   if(insertError){
+     await db.from("banner_stock").update({stok_meter:oldStock}).eq("id",row.id);
+     throw insertError;
+   }
+   await loadData();
+ }catch(err){
+   console.error(err);
+   alert("Gagal mereset stok: "+(err.message||"Error Supabase"));
  }
 }
 
@@ -160,42 +241,47 @@ function renderHistory(){
  <td>${escapeHtml(h.purpose)}</td><td>${fmt(h.remaining)} m</td></tr>`).join("");
  document.getElementById("empty").style.display=rows.length?"none":"block";
 }
+
 function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
 
 function exportExcel(){
  const rows=getRows();
  if(!rows.length){alert("Belum ada data pemakaian untuk diexport.");return}
  const excelRows=rows.map((h,i)=>({
-   "No":i+1,
-   "Tanggal":h.date,
-   "Bahan":"Banner "+h.m,
-   "Ukuran":h.s,
+   "No":i+1,"Tanggal":h.date,"Bahan":"Banner "+h.m,"Ukuran":h.s,
    "Pemakaian":h.amount==="RESET"?"RESET":Number(h.amount),
-   "Keterangan / Untuk":h.purpose,
-   "Sisa Stok (Meter)":Number(h.remaining)
+   "Keterangan / Untuk":h.purpose,"Sisa Stok (Meter)":Number(h.remaining)
  }));
  const ws=XLSX.utils.json_to_sheet(excelRows);
  ws["!cols"]=[{wch:6},{wch:22},{wch:15},{wch:14},{wch:15},{wch:35},{wch:18}];
  const wb=XLSX.utils.book_new();
  XLSX.utils.book_append_sheet(wb,ws,"Riwayat Stok");
- const summary=[
-   {"Bahan":"Banner 280","Stok Awal (m)":210,"Stok Tersisa (m)":sumMaterial("280"),"Terpakai (m)":210-sumMaterial("280")},
-   {"Bahan":"Banner 340","Stok Awal (m)":210,"Stok Tersisa (m)":sumMaterial("340"),"Terpakai (m)":210-sumMaterial("340")},
-   {"Bahan":"Banner 440","Stok Awal (m)":210,"Stok Tersisa (m)":sumMaterial("440"),"Terpakai (m)":210-sumMaterial("440")},
-   {"Bahan":"Banner 510","Stok Awal (m)":210,"Stok Tersisa (m)":sumMaterial("510"),"Terpakai (m)":210-sumMaterial("510")}
- ];
+ const summary=materials.map(m=>({
+   "Bahan":"Banner "+m,"Stok Awal (m)":210,
+   "Stok Tersisa (m)":sumMaterial(m),"Terpakai (m)":210-sumMaterial(m)
+ }));
  const ws2=XLSX.utils.json_to_sheet(summary);
  ws2["!cols"]=[{wch:18},{wch:18},{wch:20},{wch:18}];
  XLSX.utils.book_append_sheet(wb,ws2,"Ringkasan Stok");
  XLSX.writeFile(wb,"Laporan_Stok_Banner.xlsx");
 }
-function sumMaterial(m){let n=0;sizes.forEach(s=>n+=data[m][s].stock);return n}
-function clearHistory(){
- if(confirm("Hapus semua riwayat pemakaian? Stok tidak akan berubah.")){
-   materials.forEach(m=>sizes.forEach(s=>data[m][s].history=[]));save();render();
+
+function sumMaterial(m){let n=0;sizes.forEach(s=>n+=Number(data[m][s].stock||0));return n}
+
+async function clearHistory(){
+ if(!confirm("Hapus semua riwayat pemakaian? Stok tidak akan berubah.")) return;
+ try{
+   const {error}=await db.from("banner_transactions").delete().not("id","is",null);
+   if(error) throw error;
+   await loadData();
+ }catch(err){
+   console.error(err);
+   alert("Gagal menghapus riwayat: "+(err.message||"Error Supabase"));
  }
 }
-render();
+
+emptyData();
+loadData();
 </script>
 </body>
 </html>
