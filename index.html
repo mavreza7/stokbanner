@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111827">
+<title>Stok Banner 280</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f4f6;color:#111827}
+.container{max-width:1000px;margin:auto;padding:20px}
+header{background:linear-gradient(135deg,#111827,#374151);color:white;border-radius:20px;padding:24px;margin-bottom:20px;box-shadow:0 10px 30px #0002}
+h1{margin:0 0 6px;font-size:28px}
+.subtitle{opacity:.8}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
+.summary div{background:#ffffff18;border:1px solid #ffffff20;padding:14px;border-radius:14px}
+.summary strong{display:block;font-size:24px;margin-top:5px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{background:white;border-radius:18px;padding:20px;box-shadow:0 5px 20px #0000000d}
+.card h2{margin:0 0 4px;font-size:21px}
+.badge{display:inline-block;background:#e5e7eb;padding:5px 9px;border-radius:20px;font-size:12px;margin-bottom:14px}
+.meter{height:15px;background:#e5e7eb;border-radius:20px;overflow:hidden;margin:14px 0}
+.bar{height:100%;background:#16a34a;transition:.3s}
+.bar.low{background:#f59e0b}.bar.empty{background:#dc2626}
+.stock{font-size:34px;font-weight:bold}.unit{color:#6b7280}
+label{font-size:13px;color:#4b5563;font-weight:bold;display:block;margin:14px 0 6px}
+input{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;font-size:16px}
+button{border:0;border-radius:10px;padding:12px 14px;font-size:15px;font-weight:bold;cursor:pointer;margin-top:10px}
+.use{background:#111827;color:white;width:100%}.reset{background:#fee2e2;color:#991b1b;width:100%}
+button:active{transform:scale(.98)}
+.history{background:white;margin-top:20px;padding:20px;border-radius:18px;box-shadow:0 5px 20px #0000000d}
+.history h2{margin-top:0}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:11px;border-bottom:1px solid #e5e7eb;font-size:14px}
+.empty{text-align:center;color:#9ca3af;padding:20px}
+footer{text-align:center;color:#6b7280;font-size:13px;padding:25px}
+@media(max-width:750px){.grid,.summary{grid-template-columns:1fr}.container{padding:12px}header{padding:20px}h1{font-size:24px}.stock{font-size:30px}}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>📦 STOK BANNER 280</h1>
+<div class="subtitle">Kontrol stok banner per rol — 70 meter per rol</div>
+<div class="summary">
+<div>Total Awal<strong id="totalAwal">210 m</strong></div>
+<div>Total Tersisa<strong id="totalSisa">210 m</strong></div>
+<div>Total Terpakai<strong id="totalPakai">0 m</strong></div>
+</div>
+</header>
+
+<div class="grid" id="cards"></div>
+
+<div class="history">
+<h2>📋 Riwayat Pemakaian</h2>
+<table>
+<thead><tr><th>Tanggal</th><th>Ukuran</th><th>Pemakaian</th><th>Sisa</th></tr></thead>
+<tbody id="history"></tbody>
+</table>
+<div id="empty" class="empty">Belum ada pemakaian.</div>
+</div>
+
+<footer>Stok tersimpan otomatis di browser perangkat ini.</footer>
+</div>
+
+<script>
+const INITIAL=70;
+const sizes=["1 Meter","2 Meter","3 Meter"];
+let data=JSON.parse(localStorage.getItem("stokBanner280"))||{
+ "1 Meter":{stock:70,history:[]},
+ "2 Meter":{stock:70,history:[]},
+ "3 Meter":{stock:70,history:[]}
+};
+
+function save(){localStorage.setItem("stokBanner280",JSON.stringify(data));}
+function fmt(n){return Number(n).toFixed(2).replace(/\.00$/,"");}
+
+function render(){
+ const cards=document.getElementById("cards");
+ cards.innerHTML="";
+ let total=0;
+ sizes.forEach(size=>{
+   const item=data[size], percent=Math.max(0,Math.min(100,item.stock/INITIAL*100));
+   total+=item.stock;
+   let cls=percent<=0?"empty":percent<=25?"low":"";
+   cards.innerHTML+=`
+   <div class="card">
+     <span class="badge">ROL ${size}</span>
+     <h2>Banner 280</h2>
+     <div class="stock">${fmt(item.stock)} <span class="unit">meter</span></div>
+     <div class="meter"><div class="bar ${cls}" style="width:${percent}%"></div></div>
+     <small>${fmt(percent)}% dari 70 meter tersisa</small>
+     <label>Masukkan panjang pemakaian (meter)</label>
+     <input id="input-${size}" type="number" min="0.01" max="${item.stock}" step="0.01" placeholder="Contoh: 2.5">
+     <button class="use" onclick="useStock('${size}')">➖ Kurangi Stok</button>
+     <button class="reset" onclick="resetStock('${size}')">🔄 Reset ke 70 Meter</button>
+   </div>`;
+ });
+ document.getElementById("totalSisa").textContent=fmt(total)+" m";
+ document.getElementById("totalPakai").textContent=fmt(210-total)+" m";
+ renderHistory();
+}
+
+function useStock(size){
+ const input=document.getElementById("input-"+size);
+ const amount=parseFloat(input.value);
+ if(!amount || amount<=0){alert("Masukkan jumlah meter yang valid.");return;}
+ if(amount>data[size].stock){alert("Stok tidak mencukupi.");return;}
+ data[size].stock=Math.round((data[size].stock-amount)*100)/100;
+ data[size].history.unshift({
+   date:new Date().toLocaleString("id-ID"),
+   amount,
+   remaining:data[size].stock
+ });
+ save(); render();
+}
+
+function resetStock(size){
+ if(confirm("Reset stok "+size+" kembali menjadi 70 meter?")){
+   data[size].stock=INITIAL;
+   data[size].history.unshift({
+     date:new Date().toLocaleString("id-ID"),
+     amount:"RESET",
+     remaining:INITIAL
+   });
+   save();render();
+ }
+}
+
+function renderHistory(){
+ const tbody=document.getElementById("history"), empty=document.getElementById("empty");
+ let rows=[];
+ sizes.forEach(size=>{
+   data[size].history.forEach(h=>rows.push({size,...h}));
+ });
+ rows.sort((a,b)=>b.date.localeCompare(a.date));
+ tbody.innerHTML=rows.map(h=>`
+ <tr><td>${h.date}</td><td>Banner 280 — ${h.size}</td>
+ <td>${h.amount==="RESET"?"Reset stok":"-"+fmt(h.amount)+" m"}</td>
+ <td>${fmt(h.remaining)} m</td></tr>`).join("");
+ empty.style.display=rows.length?"none":"block";
+}
+render();
+</script>
+</body>
+</html>
