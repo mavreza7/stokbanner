@@ -3,327 +3,3465 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#111827">
-<title>Stok Bahan Banner</title>
+<meta name="theme-color" content="#0f172a">
+
+<title>Stok Bahan Banner PRO</title>
+
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f4f6;color:#111827}
-.container{max-width:1150px;margin:auto;padding:16px}
-header{background:linear-gradient(135deg,#111827,#374151);color:#fff;border-radius:20px;padding:22px;margin-bottom:18px;box-shadow:0 8px 25px #0002}
-h1{margin:0 0 5px;font-size:27px}.subtitle{opacity:.82}
-.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
-.summary div{background:#ffffff16;border:1px solid #ffffff20;padding:12px;border-radius:13px}
-.summary strong{display:block;font-size:23px;margin-top:4px}
-.material{background:#fff;border-radius:18px;margin-bottom:18px;padding:18px;box-shadow:0 5px 20px #0000000c}
-.material-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.material-title h2{margin:0;font-size:23px}.total-material{font-weight:bold;color:#374151}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.card{border:1px solid #e5e7eb;border-radius:15px;padding:16px}
-.badge{display:inline-block;background:#e5e7eb;padding:5px 9px;border-radius:20px;font-size:12px;margin-bottom:10px}
-.card h3{margin:0 0 5px}.stock{font-size:30px;font-weight:bold}.unit{font-size:14px;color:#6b7280;font-weight:normal}
-.meter{height:12px;background:#e5e7eb;border-radius:20px;overflow:hidden;margin:12px 0}.bar{height:100%;background:#16a34a;transition:.3s}.bar.low{background:#f59e0b}.bar.empty{background:#dc2626}
-small{color:#6b7280}
-label{font-size:12px;color:#4b5563;font-weight:bold;display:block;margin:12px 0 5px}
-input,select{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:9px;font-size:15px;background:white}
-button{border:0;border-radius:9px;padding:11px;font-size:14px;font-weight:bold;cursor:pointer;margin-top:8px}
-.use{background:#111827;color:white;width:100%}.reset{background:#fee2e2;color:#991b1b;width:100%}
-.history{background:#fff;border-radius:18px;padding:18px;box-shadow:0 5px 20px #0000000c}.history h2{margin-top:0}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.actions button{margin:0}
-.excel{background:#15803d;color:white}.clear{background:#fee2e2;color:#991b1b}
-.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:900px}th,td{text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;font-size:13px}
-th{background:#f9fafb}.empty{text-align:center;color:#9ca3af;padding:18px}
-footer{text-align:center;color:#6b7280;font-size:12px;padding:22px}
-.auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#111827,#374151)}
-.auth-box{width:min(430px,100%);background:#fff;border-radius:20px;padding:28px;box-shadow:0 15px 45px #0005}.auth-box h1{color:#111827;margin-bottom:6px}.auth-box p{color:#6b7280;font-size:14px}.auth-box input{margin-bottom:8px}.auth-btn{background:#111827;color:#fff;width:100%;margin-top:12px}.auth-secondary{background:#e5e7eb;color:#111827;width:100%;margin-top:8px}.auth-msg{font-size:13px;min-height:18px;margin-top:10px;color:#b91c1c}.userbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;padding:10px 14px;background:#fff;border-radius:12px;box-shadow:0 3px 12px #0000000a}.logout{background:#fee2e2;color:#991b1b;margin:0}.role-badge{font-size:12px;background:#e5e7eb;padding:5px 9px;border-radius:20px}
-@media(max-width:750px){.grid,.summary{grid-template-columns:1fr}.container{padding:10px}.material{padding:13px}h1{font-size:23px}.material-title{align-items:flex-start;gap:8px;flex-direction:column}}
+/* =========================================================
+   RESET
+========================================================= */
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+:root{
+    --bg:#f1f5f9;
+    --card:#ffffff;
+    --text:#0f172a;
+    --muted:#64748b;
+    --border:#e2e8f0;
+
+    --dark:#0f172a;
+    --dark2:#1e293b;
+
+    --green:#16a34a;
+    --green-light:#dcfce7;
+
+    --orange:#f59e0b;
+    --orange-light:#fef3c7;
+
+    --red:#dc2626;
+    --red-light:#fee2e2;
+
+    --blue:#2563eb;
+    --blue-light:#dbeafe;
+
+    --purple:#7c3aed;
+    --purple-light:#ede9fe;
+
+    --shadow:0 10px 30px rgba(15,23,42,.07);
+    --shadow-lg:0 20px 50px rgba(15,23,42,.12);
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    background:
+        radial-gradient(
+            circle at top left,
+            rgba(37,99,235,.08),
+            transparent 30%
+        ),
+        var(--bg);
+
+    color:var(--text);
+    min-height:100vh;
+}
+
+/* =========================================================
+   AUTH
+========================================================= */
+
+.auth-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+
+    background:
+        radial-gradient(circle at 10% 10%,rgba(59,130,246,.25),transparent 30%),
+        radial-gradient(circle at 90% 90%,rgba(124,58,237,.2),transparent 30%),
+        linear-gradient(135deg,#020617,#0f172a,#1e293b);
+}
+
+.auth-box{
+    width:min(430px,100%);
+    padding:34px;
+
+    background:rgba(255,255,255,.97);
+    border:1px solid rgba(255,255,255,.5);
+
+    border-radius:28px;
+
+    box-shadow:
+        0 30px 80px rgba(0,0,0,.35);
+
+    animation:authIn .5s ease;
+}
+
+@keyframes authIn{
+    from{
+        opacity:0;
+        transform:translateY(20px) scale(.97);
+    }
+    to{
+        opacity:1;
+        transform:none;
+    }
+}
+
+.auth-logo{
+    width:64px;
+    height:64px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:18px;
+
+    background:
+        linear-gradient(135deg,#0f172a,#334155);
+
+    color:white;
+    font-size:30px;
+
+    margin-bottom:18px;
+
+    box-shadow:0 10px 25px rgba(15,23,42,.2);
+}
+
+.auth-box h1{
+    font-size:25px;
+    margin-bottom:6px;
+}
+
+.auth-box p{
+    color:var(--muted);
+    font-size:14px;
+    line-height:1.6;
+    margin-bottom:22px;
+}
+
+.form-group{
+    margin-bottom:15px;
+}
+
+.form-group label{
+    display:block;
+    margin-bottom:7px;
+
+    font-size:12px;
+    font-weight:800;
+
+    color:#475569;
+}
+
+.auth-box input{
+    width:100%;
+    padding:13px 14px;
+
+    border:1px solid var(--border);
+    border-radius:12px;
+
+    font-size:14px;
+
+    outline:none;
+
+    transition:.2s;
+
+    background:#f8fafc;
+}
+
+.auth-box input:focus{
+    border-color:#3b82f6;
+    background:white;
+
+    box-shadow:
+        0 0 0 4px rgba(59,130,246,.1);
+}
+
+.auth-btn,
+.auth-secondary{
+    width:100%;
+    border:0;
+
+    padding:13px;
+
+    border-radius:12px;
+
+    font-weight:800;
+    font-size:14px;
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.auth-btn{
+    background:linear-gradient(135deg,#0f172a,#334155);
+    color:white;
+
+    margin-top:5px;
+}
+
+.auth-btn:hover{
+    transform:translateY(-1px);
+    box-shadow:0 8px 20px rgba(15,23,42,.2);
+}
+
+.auth-secondary{
+    background:#f1f5f9;
+    color:#334155;
+
+    margin-top:9px;
+}
+
+.auth-secondary:hover{
+    background:#e2e8f0;
+}
+
+.auth-msg{
+    min-height:20px;
+    margin-top:12px;
+
+    font-size:13px;
+    text-align:center;
+}
+
+/* =========================================================
+   APP
+========================================================= */
+
+#appScreen{
+    min-height:100vh;
+}
+
+.container{
+    width:min(1250px,100%);
+    margin:auto;
+    padding:18px;
+}
+
+/* =========================================================
+   USER BAR
+========================================================= */
+
+.userbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    gap:12px;
+
+    padding:10px 13px;
+    margin-bottom:14px;
+
+    background:rgba(255,255,255,.85);
+    backdrop-filter:blur(15px);
+
+    border:1px solid rgba(226,232,240,.8);
+
+    border-radius:15px;
+
+    box-shadow:0 4px 20px rgba(15,23,42,.04);
+}
+
+.user-info{
+    display:flex;
+    align-items:center;
+    gap:9px;
+
+    min-width:0;
+}
+
+.user-avatar{
+    width:34px;
+    height:34px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:10px;
+
+    background:#e2e8f0;
+
+    flex-shrink:0;
+}
+
+.user-text{
+    min-width:0;
+}
+
+.user-email{
+    display:block;
+
+    font-size:13px;
+    font-weight:800;
+
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.user-role{
+    display:block;
+
+    color:var(--muted);
+
+    font-size:11px;
+}
+
+.role-badge{
+    display:inline-flex;
+    align-items:center;
+
+    padding:4px 8px;
+
+    border-radius:20px;
+
+    background:#dcfce7;
+    color:#166534;
+
+    font-size:10px;
+    font-weight:900;
+}
+
+.logout{
+    border:0;
+
+    background:#fee2e2;
+    color:#991b1b;
+
+    padding:9px 13px;
+
+    border-radius:10px;
+
+    font-weight:800;
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.logout:hover{
+    background:#fecaca;
+}
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.hero{
+    position:relative;
+    overflow:hidden;
+
+    color:white;
+
+    padding:28px;
+
+    border-radius:25px;
+
+    background:
+        radial-gradient(
+            circle at 90% 10%,
+            rgba(59,130,246,.28),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 10% 90%,
+            rgba(124,58,237,.2),
+            transparent 30%
+        ),
+        linear-gradient(135deg,#020617,#172033,#334155);
+
+    box-shadow:var(--shadow-lg);
+
+    margin-bottom:18px;
+}
+
+.hero::after{
+    content:"";
+
+    position:absolute;
+
+    width:180px;
+    height:180px;
+
+    right:-60px;
+    bottom:-90px;
+
+    border-radius:50%;
+
+    border:35px solid rgba(255,255,255,.04);
+}
+
+.hero-top{
+    position:relative;
+    z-index:2;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+
+    gap:20px;
+}
+
+.hero-title{
+    display:flex;
+    align-items:center;
+    gap:13px;
+}
+
+.hero-icon{
+    width:52px;
+    height:52px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:rgba(255,255,255,.1);
+
+    border:1px solid rgba(255,255,255,.12);
+
+    border-radius:16px;
+
+    font-size:25px;
+}
+
+.hero h1{
+    font-size:28px;
+    line-height:1.1;
+}
+
+.hero-subtitle{
+    margin-top:6px;
+
+    color:#cbd5e1;
+
+    font-size:13px;
+}
+
+.admin-pill{
+    padding:8px 11px;
+
+    background:rgba(255,255,255,.1);
+
+    border:1px solid rgba(255,255,255,.12);
+
+    border-radius:10px;
+
+    font-size:11px;
+    font-weight:800;
+}
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+.summary{
+    position:relative;
+    z-index:2;
+
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+
+    gap:12px;
+
+    margin-top:23px;
+}
+
+.summary-card{
+    padding:15px;
+
+    border-radius:16px;
+
+    background:rgba(255,255,255,.08);
+
+    border:1px solid rgba(255,255,255,.1);
+
+    backdrop-filter:blur(8px);
+
+    transition:.2s;
+}
+
+.summary-card:hover{
+    background:rgba(255,255,255,.12);
+
+    transform:translateY(-2px);
+}
+
+.summary-label{
+    color:#cbd5e1;
+
+    font-size:11px;
+    font-weight:700;
+}
+
+.summary-value{
+    display:block;
+
+    margin-top:5px;
+
+    font-size:25px;
+    font-weight:900;
+
+    letter-spacing:-.5px;
+}
+
+.summary-unit{
+    color:#94a3b8;
+
+    font-size:11px;
+    font-weight:500;
+}
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+.section-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:end;
+
+    gap:15px;
+
+    margin:25px 2px 12px;
+}
+
+.section-title h2{
+    font-size:20px;
+}
+
+.section-title p{
+    color:var(--muted);
+    font-size:12px;
+    margin-top:3px;
+}
+
+.refresh-btn{
+    border:1px solid var(--border);
+
+    background:white;
+    color:#334155;
+
+    padding:9px 12px;
+
+    border-radius:10px;
+
+    font-weight:800;
+    font-size:12px;
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.refresh-btn:hover{
+    background:#f8fafc;
+}
+
+/* =========================================================
+   MATERIAL
+========================================================= */
+
+.material{
+    background:white;
+
+    border:1px solid var(--border);
+
+    border-radius:22px;
+
+    margin-bottom:18px;
+
+    padding:19px;
+
+    box-shadow:var(--shadow);
+
+    animation:fadeUp .35s ease;
+}
+
+@keyframes fadeUp{
+    from{
+        opacity:0;
+        transform:translateY(8px);
+    }
+    to{
+        opacity:1;
+        transform:none;
+    }
+}
+
+.material-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    gap:15px;
+
+    margin-bottom:15px;
+}
+
+.material-name{
+    display:flex;
+    align-items:center;
+    gap:11px;
+}
+
+.material-icon{
+    width:40px;
+    height:40px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:12px;
+
+    background:#f1f5f9;
+
+    font-size:19px;
+}
+
+.material-name h2{
+    font-size:18px;
+}
+
+.material-name p{
+    color:var(--muted);
+
+    font-size:11px;
+
+    margin-top:2px;
+}
+
+.material-total{
+    text-align:right;
+}
+
+.material-total strong{
+    display:block;
+    font-size:18px;
+}
+
+.material-total span{
+    color:var(--muted);
+    font-size:11px;
+}
+
+/* =========================================================
+   STOCK CARDS
+========================================================= */
+
+.grid{
+    display:grid;
+
+    grid-template-columns:repeat(3,1fr);
+
+    gap:13px;
+}
+
+.card{
+    position:relative;
+
+    overflow:hidden;
+
+    padding:16px;
+
+    border:1px solid var(--border);
+
+    border-radius:17px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #ffffff,
+            #f8fafc
+        );
+
+    transition:.25s;
+}
+
+.card:hover{
+    transform:translateY(-3px);
+
+    box-shadow:
+        0 12px 28px rgba(15,23,42,.09);
+
+    border-color:#cbd5e1;
+}
+
+.card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-bottom:11px;
+}
+
+.badge{
+    display:inline-flex;
+    align-items:center;
+
+    padding:5px 9px;
+
+    border-radius:20px;
+
+    background:#f1f5f9;
+
+    color:#475569;
+
+    font-size:10px;
+    font-weight:900;
+}
+
+.status{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+
+    padding:5px 8px;
+
+    border-radius:20px;
+
+    font-size:9px;
+    font-weight:900;
+}
+
+.status::before{
+    content:"";
+
+    width:6px;
+    height:6px;
+
+    border-radius:50%;
+
+    background:currentColor;
+}
+
+.status.safe{
+    background:var(--green-light);
+    color:#15803d;
+}
+
+.status.low{
+    background:var(--orange-light);
+    color:#b45309;
+}
+
+.status.empty{
+    background:var(--red-light);
+    color:#b91c1c;
+}
+
+.card h3{
+    font-size:14px;
+    margin-bottom:3px;
+}
+
+.stock-number{
+    font-size:30px;
+
+    font-weight:900;
+
+    letter-spacing:-1px;
+}
+
+.stock-number span{
+    font-size:13px;
+
+    color:var(--muted);
+
+    font-weight:600;
+
+    letter-spacing:0;
+}
+
+.meter{
+    height:9px;
+
+    margin:11px 0 7px;
+
+    overflow:hidden;
+
+    border-radius:20px;
+
+    background:#e2e8f0;
+}
+
+.bar{
+    height:100%;
+
+    border-radius:20px;
+
+    background:linear-gradient(
+        90deg,
+        #22c55e,
+        #16a34a
+    );
+
+    transition:width .4s ease;
+}
+
+.bar.low{
+    background:linear-gradient(
+        90deg,
+        #fbbf24,
+        #f59e0b
+    );
+}
+
+.bar.empty{
+    background:#dc2626;
+}
+
+.stock-meta{
+    display:flex;
+    justify-content:space-between;
+
+    color:var(--muted);
+
+    font-size:10px;
+
+    margin-bottom:13px;
+}
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.form-group-small{
+    margin-top:10px;
+}
+
+.form-group-small label{
+    display:block;
+
+    margin-bottom:5px;
+
+    color:#475569;
+
+    font-size:10px;
+    font-weight:800;
+}
+
+.card input{
+    width:100%;
+
+    padding:10px 11px;
+
+    border:1px solid #dbe2ea;
+
+    border-radius:10px;
+
+    background:white;
+
+    font-size:13px;
+
+    outline:none;
+
+    transition:.2s;
+}
+
+.card input:focus{
+    border-color:#3b82f6;
+
+    box-shadow:
+        0 0 0 3px rgba(59,130,246,.08);
+}
+
+.use{
+    width:100%;
+
+    margin-top:10px;
+
+    padding:11px;
+
+    border:0;
+
+    border-radius:10px;
+
+    background:#0f172a;
+
+    color:white;
+
+    font-size:12px;
+    font-weight:900;
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.use:hover{
+    background:#1e293b;
+
+    transform:translateY(-1px);
+
+    box-shadow:
+        0 7px 16px rgba(15,23,42,.16);
+}
+
+.use:active{
+    transform:scale(.98);
+}
+
+.reset{
+    width:100%;
+
+    margin-top:7px;
+
+    padding:9px;
+
+    border:0;
+
+    border-radius:10px;
+
+    background:#fff1f2;
+
+    color:#be123c;
+
+    font-size:11px;
+    font-weight:900;
+
+    cursor:pointer;
+}
+
+.reset:hover{
+    background:#ffe4e6;
+}
+
+/* =========================================================
+   HISTORY
+========================================================= */
+
+.history{
+    margin-top:24px;
+
+    background:white;
+
+    border:1px solid var(--border);
+
+    border-radius:22px;
+
+    padding:19px;
+
+    box-shadow:var(--shadow);
+}
+
+.history-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+
+    gap:15px;
+
+    margin-bottom:13px;
+}
+
+.history-header h2{
+    font-size:19px;
+}
+
+.history-header p{
+    margin-top:3px;
+
+    color:var(--muted);
+
+    font-size:11px;
+}
+
+.actions{
+    display:flex;
+    gap:7px;
+    flex-wrap:wrap;
+}
+
+.action-btn{
+    border:0;
+
+    padding:9px 11px;
+
+    border-radius:10px;
+
+    font-size:11px;
+    font-weight:900;
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.excel{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.excel:hover{
+    background:#bbf7d0;
+}
+
+.clear{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.clear:hover{
+    background:#fecaca;
+}
+
+.table-wrap{
+    overflow-x:auto;
+
+    border:1px solid var(--border);
+
+    border-radius:13px;
+}
+
+table{
+    width:100%;
+
+    border-collapse:collapse;
+
+    min-width:850px;
+}
+
+th,
+td{
+    padding:11px 12px;
+
+    border-bottom:1px solid #edf1f5;
+
+    text-align:left;
+
+    font-size:11px;
+}
+
+th{
+    background:#f8fafc;
+
+    color:#475569;
+
+    font-size:10px;
+
+    font-weight:900;
+
+    text-transform:uppercase;
+
+    letter-spacing:.3px;
+}
+
+tbody tr{
+    transition:.15s;
+}
+
+tbody tr:hover{
+    background:#f8fafc;
+}
+
+tbody tr:last-child td{
+    border-bottom:0;
+}
+
+.usage{
+    font-weight:900;
+    color:#dc2626;
+}
+
+.remaining{
+    font-weight:900;
+    color:#15803d;
+}
+
+.reset-row{
+    font-weight:900;
+    color:#7c3aed;
+}
+
+.empty{
+    text-align:center;
+
+    padding:35px 15px;
+
+    color:#94a3b8;
+
+    font-size:12px;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+footer{
+    text-align:center;
+
+    padding:25px 10px;
+
+    color:#94a3b8;
+
+    font-size:10px;
+
+    line-height:1.6;
+}
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.loading{
+    position:fixed;
+
+    inset:0;
+
+    z-index:9999;
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    background:rgba(2,6,23,.45);
+
+    backdrop-filter:blur(5px);
+}
+
+.loading-box{
+    background:white;
+
+    padding:22px 26px;
+
+    border-radius:16px;
+
+    box-shadow:0 20px 50px rgba(0,0,0,.2);
+
+    text-align:center;
+}
+
+.spinner{
+    width:30px;
+    height:30px;
+
+    margin:auto auto 10px;
+
+    border:3px solid #e2e8f0;
+
+    border-top-color:#0f172a;
+
+    border-radius:50%;
+
+    animation:spin .7s linear infinite;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+.loading-box strong{
+    font-size:13px;
+}
+
+.loading-box p{
+    color:var(--muted);
+
+    font-size:11px;
+
+    margin-top:3px;
+}
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+.toast-container{
+    position:fixed;
+
+    right:18px;
+    bottom:18px;
+
+    z-index:10000;
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+}
+
+.toast{
+    min-width:250px;
+
+    max-width:350px;
+
+    padding:12px 14px;
+
+    background:#0f172a;
+
+    color:white;
+
+    border-radius:12px;
+
+    box-shadow:0 15px 35px rgba(0,0,0,.2);
+
+    font-size:12px;
+    font-weight:700;
+
+    animation:toastIn .25s ease;
+}
+
+.toast.success{
+    background:#166534;
+}
+
+.toast.error{
+    background:#991b1b;
+}
+
+@keyframes toastIn{
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+    to{
+        opacity:1;
+        transform:none;
+    }
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:900px){
+
+    .summary{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+}
+
+@media(max-width:650px){
+
+    .container{
+        padding:10px;
+    }
+
+    .userbar{
+        padding:9px 10px;
+    }
+
+    .hero{
+        padding:20px;
+
+        border-radius:20px;
+    }
+
+    .hero-top{
+        flex-direction:column;
+    }
+
+    .hero h1{
+        font-size:22px;
+    }
+
+    .hero-icon{
+        width:45px;
+        height:45px;
+    }
+
+    .admin-pill{
+        display:none;
+    }
+
+    .summary{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .summary-value{
+        font-size:21px;
+    }
+
+    .section-title{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .material{
+        padding:14px;
+        border-radius:18px;
+    }
+
+    .material-header{
+        align-items:flex-start;
+    }
+
+    .material-total{
+        text-align:left;
+    }
+
+    .history{
+        padding:14px;
+        border-radius:18px;
+    }
+
+    .history-header{
+        flex-direction:column;
+    }
+
+    .actions{
+        width:100%;
+    }
+
+    .action-btn{
+        flex:1;
+    }
+
+    .auth-box{
+        padding:25px 20px;
+        border-radius:22px;
+    }
+
+}
+
+@media(max-width:390px){
+
+    .summary{
+        grid-template-columns:1fr;
+    }
+
+    .user-email{
+        max-width:145px;
+    }
+
+}
 </style>
 </head>
+
 <body>
+
+<!-- =====================================================
+     AUTH SCREEN
+===================================================== -->
+
 <div id="authScreen" class="auth-screen">
-  <div class="auth-box">
-    <h1>📦 Stok Bahan Banner</h1>
-    <p id="authTitle">Login untuk membuka dashboard stok.</p>
-    <label>Email</label>
-    <input id="authEmail" type="email" placeholder="nama@email.com" autocomplete="email">
-    <label>Password</label>
-    <input id="authPassword" type="password" placeholder="Minimal 6 karakter" autocomplete="current-password">
-    <button class="auth-btn" id="loginBtn" onclick="login()">🔐 Login</button>
-    <button class="auth-secondary" id="signupBtn" onclick="signup()">➕ Buat Akun Karyawan</button>
-    <div id="authMsg" class="auth-msg"></div>
-  </div>
+
+    <div class="auth-box">
+
+        <div class="auth-logo">
+            📦
+        </div>
+
+        <h1>Stok Bahan Banner</h1>
+
+        <p>
+            Login untuk mengakses dashboard inventori,
+            memantau stok, dan mencatat penggunaan bahan banner.
+        </p>
+
+        <div class="form-group">
+            <label>Email</label>
+
+            <input
+                id="authEmail"
+                type="email"
+                placeholder="nama@email.com"
+                autocomplete="email"
+            >
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+
+            <input
+                id="authPassword"
+                type="password"
+                placeholder="Minimal 6 karakter"
+                autocomplete="current-password"
+            >
+        </div>
+
+        <button
+            class="auth-btn"
+            id="loginBtn"
+            onclick="login()"
+        >
+            🔐 Masuk ke Dashboard
+        </button>
+
+        <button
+            class="auth-secondary"
+            id="signupBtn"
+            onclick="signup()"
+        >
+            ➕ Buat Akun Karyawan
+        </button>
+
+        <div
+            id="authMsg"
+            class="auth-msg"
+        ></div>
+
+    </div>
+
 </div>
+
+
+<!-- =====================================================
+     APP SCREEN
+===================================================== -->
 
 <div id="appScreen" style="display:none">
-<div class="container">
-<div class="userbar"><div>👤 <strong id="userEmail"></strong> <span id="roleBadge" class="role-badge"></span></div><button class="logout" onclick="logout()">Keluar</button></div>
-<header>
-<h1>📦 STOK BAHAN BANNER</h1>
-<div class="subtitle">Stok per rol — setiap rol berisi 70 meter</div>
-<div class="summary">
-<div>Total Awal<strong id="totalAwal">840 m</strong></div>
-<div>Total Tersisa<strong id="totalSisa">840 m</strong></div>
-<div>Total Terpakai<strong id="totalPakai">0 m</strong></div>
-</div>
-</header>
 
-<div id="materials"></div>
+    <div class="container">
 
-<div class="history">
-<h2>📋 Tabel Pemakaian Banner</h2>
-<div class="actions">
-<button class="excel" onclick="exportExcel()">📊 Simpan / Export ke Excel</button>
-<button class="clear" onclick="clearHistory()">🗑️ Hapus Riwayat</button>
+        <!-- USER BAR -->
+
+        <div class="userbar">
+
+            <div class="user-info">
+
+                <div class="user-avatar">
+                    👤
+                </div>
+
+                <div class="user-text">
+
+                    <span
+                        class="user-email"
+                        id="userEmail"
+                    >
+                    </span>
+
+                    <span class="user-role">
+                        Akses:
+                        <span
+                            id="roleBadge"
+                            class="role-badge"
+                        >
+                        </span>
+                    </span>
+
+                </div>
+
+            </div>
+
+            <button
+                class="logout"
+                onclick="logout()"
+            >
+                Keluar
+            </button>
+
+        </div>
+
+
+        <!-- HERO -->
+
+        <header class="hero">
+
+            <div class="hero-top">
+
+                <div class="hero-title">
+
+                    <div class="hero-icon">
+                        📦
+                    </div>
+
+                    <div>
+
+                        <h1>
+                            STOK BAHAN BANNER
+                        </h1>
+
+                        <div class="hero-subtitle">
+                            Dashboard inventori & pemakaian material
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="admin-pill">
+                    ONLINE • SUPABASE
+                </div>
+
+            </div>
+
+
+            <!-- SUMMARY -->
+
+            <div class="summary">
+
+                <div class="summary-card">
+
+                    <span class="summary-label">
+                        TOTAL STOK AWAL
+                    </span>
+
+                    <strong
+                        class="summary-value"
+                        id="totalAwal"
+                    >
+                        0
+                    </strong>
+
+                    <span class="summary-unit">
+                        meter
+                    </span>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    <span class="summary-label">
+                        STOK TERSISA
+                    </span>
+
+                    <strong
+                        class="summary-value"
+                        id="totalSisa"
+                    >
+                        0
+                    </strong>
+
+                    <span class="summary-unit">
+                        meter
+                    </span>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    <span class="summary-label">
+                        TOTAL TERPAKAI
+                    </span>
+
+                    <strong
+                        class="summary-value"
+                        id="totalPakai"
+                    >
+                        0
+                    </strong>
+
+                    <span class="summary-unit">
+                        meter
+                    </span>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    <span class="summary-label">
+                        JUMLAH ROL
+                    </span>
+
+                    <strong
+                        class="summary-value"
+                        id="totalRol"
+                    >
+                        0
+                    </strong>
+
+                    <span class="summary-unit">
+                        rol aktif
+                    </span>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- MATERIAL SECTION -->
+
+        <div class="section-title">
+
+            <div>
+
+                <h2>
+                    📊 Persediaan Material
+                </h2>
+
+                <p>
+                    Pantau stok setiap bahan dan rol secara realtime.
+                </p>
+
+            </div>
+
+            <button
+                class="refresh-btn"
+                onclick="loadData()"
+            >
+                🔄 Refresh Data
+            </button>
+
+        </div>
+
+
+        <div id="materials"></div>
+
+
+        <!-- HISTORY -->
+
+        <section class="history">
+
+            <div class="history-header">
+
+                <div>
+
+                    <h2>
+                        📋 Riwayat Pemakaian
+                    </h2>
+
+                    <p>
+                        Semua aktivitas pemakaian bahan banner tersimpan di database.
+                    </p>
+
+                </div>
+
+
+                <div class="actions">
+
+                    <button
+                        class="action-btn excel"
+                        onclick="exportExcel()"
+                    >
+                        📊 Export Excel
+                    </button>
+
+                    <button
+                        class="action-btn clear"
+                        onclick="clearHistory()"
+                    >
+                        🗑️ Hapus Riwayat
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="table-wrap">
+
+                <table id="historyTable">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>No</th>
+                            <th>Tanggal</th>
+                            <th>Bahan</th>
+                            <th>Rol</th>
+                            <th>Pemakaian</th>
+                            <th>Keterangan / Untuk</th>
+                            <th>Sisa Stok</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="history"></tbody>
+
+                </table>
+
+            </div>
+
+
+            <div
+                id="empty"
+                class="empty"
+            >
+                📭 Belum ada riwayat pemakaian.
+            </div>
+
+        </section>
+
+
+        <footer>
+            Data tersimpan online menggunakan Supabase.
+            Dashboard dapat diakses dari HP maupun komputer.
+            <br>
+            Export laporan tersedia dalam format Excel (.xlsx).
+        </footer>
+
+    </div>
+
 </div>
-<p style="font-size:13px;color:#6b7280">Setiap pemakaian dicatat dengan bahan, ukuran, jumlah meter, dan keterangan banner digunakan untuk apa.</p>
-<div class="table-wrap"><table id="historyTable">
-<thead><tr><th>No</th><th>Tanggal</th><th>Bahan</th><th>Ukuran</th><th>Pemakaian</th><th>Keterangan / Untuk</th><th>Sisa Stok</th></tr></thead>
-<tbody id="history"></tbody>
-</table></div>
-<div id="empty" class="empty">Belum ada pemakaian.</div>
+
+
+<!-- =====================================================
+     LOADING
+===================================================== -->
+
+<div
+    id="loading"
+    class="loading"
+    style="display:none"
+>
+
+    <div class="loading-box">
+
+        <div class="spinner"></div>
+
+        <strong id="loadingText">
+            Memuat data...
+        </strong>
+
+        <p>
+            Mohon tunggu sebentar
+        </p>
+
+    </div>
+
 </div>
-<footer>Data tersimpan online di Supabase, sehingga stok dan riwayat dapat dibuka dari HP maupun komputer. Export Excel menghasilkan file .xlsx.</footer>
-</div>
-</div>
+
+
+<!-- =====================================================
+     TOAST
+===================================================== -->
+
+<div
+    id="toastContainer"
+    class="toast-container"
+></div>
+
 
 <script>
-const INITIAL=70;
-const materials=["280","340","440","510"];
-const sizes=["1 Meter","2 Meter","3 Meter"];
-const SUPABASE_URL="https://oafeipboodvriapygvmq.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY="sb_publishable_7ixFQqPozdCSLZhrbjpRUg_8zeHE9CS";
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
-let currentUser=null;
-let currentRole="karyawan";
 
-function setAuthMsg(msg,isOk=false){const el=document.getElementById("authMsg");el.textContent=msg;el.style.color=isOk?"#15803d":"#b91c1c"}
+/* =========================================================
+   SUPABASE CONFIG
+========================================================= */
+
+const SUPABASE_URL =
+"https://oafeipboodvriapygvmq.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+"sb_publishable_7ixFQqPozdCSLZhrbjpRUg_8zeHE9CS";
+
+const db =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+);
+
+
+/* =========================================================
+   CONFIG
+========================================================= */
+
+const INITIAL = 70;
+
+const materials = [
+    "280",
+    "340",
+    "440",
+    "510"
+];
+
+const sizes = [
+    "1 Meter",
+    "2 Meter",
+    "3 Meter"
+];
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let currentUser = null;
+
+let currentRole = "karyawan";
+
+let data = {};
+
+let stockRows = [];
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function fmt(number){
+
+    return Number(number || 0)
+        .toFixed(2)
+        .replace(/\.00$/,"");
+
+}
+
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+        .replace(
+            /[&<>"']/g,
+            character => ({
+                "&":"&amp;",
+                "<":"&lt;",
+                ">":"&gt;",
+                '"':"&quot;",
+                "'":"&#039;"
+            }[character])
+        );
+
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function showToast(
+    message,
+    type = ""
+){
+
+    const container =
+        document.getElementById(
+            "toastContainer"
+        );
+
+    const toast =
+        document.createElement("div");
+
+    toast.className =
+        "toast " + type;
+
+    toast.textContent =
+        message;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(8px)";
+
+        setTimeout(() => {
+            toast.remove();
+        },250);
+
+    },3000);
+
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+function showLoading(
+    text = "Memuat data..."
+){
+
+    document.getElementById(
+        "loadingText"
+    ).textContent = text;
+
+    document.getElementById(
+        "loading"
+    ).style.display = "flex";
+
+}
+
+
+function hideLoading(){
+
+    document.getElementById(
+        "loading"
+    ).style.display = "none";
+
+}
+
+
+/* =========================================================
+   AUTH MESSAGE
+========================================================= */
+
+function setAuthMsg(
+    message,
+    success = false
+){
+
+    const element =
+        document.getElementById(
+            "authMsg"
+        );
+
+    element.textContent =
+        message;
+
+    element.style.color =
+        success
+        ? "#15803d"
+        : "#b91c1c";
+
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
 
 async function login(){
-  const email=document.getElementById("authEmail").value.trim();
-  const password=document.getElementById("authPassword").value;
-  if(!email||!password){setAuthMsg("Isi email dan password.");return}
-  setAuthMsg("Sedang login...",true);
-  const {data,error}=await db.auth.signInWithPassword({email,password});
-  if(error){setAuthMsg(error.message);return}
-  await startApp(data.user);
+
+    const email =
+        document
+        .getElementById("authEmail")
+        .value
+        .trim();
+
+    const password =
+        document
+        .getElementById("authPassword")
+        .value;
+
+    if(!email || !password){
+
+        setAuthMsg(
+            "Isi email dan password terlebih dahulu."
+        );
+
+        return;
+
+    }
+
+    setAuthMsg(
+        "Sedang masuk...",
+        true
+    );
+
+    const {
+        data,
+        error
+    } =
+    await db.auth.signInWithPassword({
+        email,
+        password
+    });
+
+    if(error){
+
+        setAuthMsg(
+            error.message
+        );
+
+        return;
+
+    }
+
+    await startApp(
+        data.user
+    );
+
 }
+
+
+/* =========================================================
+   SIGN UP
+========================================================= */
 
 async function signup(){
-  const email=document.getElementById("authEmail").value.trim();
-  const password=document.getElementById("authPassword").value;
-  if(!email||!password){setAuthMsg("Isi email dan password.");return}
-  if(password.length<6){setAuthMsg("Password minimal 6 karakter.");return}
-  setAuthMsg("Membuat akun...",true);
-  const {data,error}=await db.auth.signUp({email,password});
-  if(error){setAuthMsg(error.message);return}
-  if(data.session){await startApp(data.user)}
-  else setAuthMsg("Akun dibuat. Cek email untuk verifikasi, lalu login.",true);
+
+    const email =
+        document
+        .getElementById("authEmail")
+        .value
+        .trim();
+
+    const password =
+        document
+        .getElementById("authPassword")
+        .value;
+
+    if(!email || !password){
+
+        setAuthMsg(
+            "Isi email dan password terlebih dahulu."
+        );
+
+        return;
+
+    }
+
+    if(password.length < 6){
+
+        setAuthMsg(
+            "Password minimal 6 karakter."
+        );
+
+        return;
+
+    }
+
+    setAuthMsg(
+        "Membuat akun...",
+        true
+    );
+
+    const {
+        data,
+        error
+    } =
+    await db.auth.signUp({
+        email,
+        password
+    });
+
+    if(error){
+
+        setAuthMsg(
+            error.message
+        );
+
+        return;
+
+    }
+
+    if(data.session){
+
+        await startApp(
+            data.user
+        );
+
+    }else{
+
+        setAuthMsg(
+            "Akun berhasil dibuat. Cek email untuk verifikasi, kemudian login.",
+            true
+        );
+
+    }
+
 }
 
-async function logout(){await db.auth.signOut();currentUser=null;currentRole="karyawan";document.getElementById("appScreen").style.display="none";document.getElementById("authScreen").style.display="flex";setAuthMsg("Anda sudah keluar.",true)}
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+async function logout(){
+
+    await db.auth.signOut();
+
+    currentUser = null;
+
+    currentRole = "karyawan";
+
+    document.getElementById(
+        "appScreen"
+    ).style.display = "none";
+
+    document.getElementById(
+        "authScreen"
+    ).style.display = "flex";
+
+    setAuthMsg(
+        "Anda sudah keluar.",
+        true
+    );
+
+}
+
+
+/* =========================================================
+   GET ROLE
+========================================================= */
 
 async function getRole(user){
-  const {data,error}=await db.from("profiles").select("role").eq("id",user.id).single();
-  if(error){console.error(error);return "karyawan"}
-  return data?.role||"karyawan";
+
+    const {
+        data,
+        error
+    } =
+    await db
+        .from("profiles")
+        .select("role")
+        .eq("id",user.id)
+        .single();
+
+    if(error){
+
+        console.error(error);
+
+        return "karyawan";
+
+    }
+
+    return data?.role || "karyawan";
+
 }
+
+
+/* =========================================================
+   START APP
+========================================================= */
 
 async function startApp(user){
-  currentUser=user;
-  currentRole=await getRole(user);
-  document.getElementById("userEmail").textContent=user.email||"User";
-  document.getElementById("roleBadge").textContent=currentRole.toUpperCase();
-  document.getElementById("authScreen").style.display="none";
-  document.getElementById("appScreen").style.display="block";
-  await loadData();
+
+    currentUser = user;
+
+    currentRole =
+        await getRole(user);
+
+    document.getElementById(
+        "userEmail"
+    ).textContent =
+        user.email || "User";
+
+    document.getElementById(
+        "roleBadge"
+    ).textContent =
+        currentRole.toUpperCase();
+
+    document.getElementById(
+        "authScreen"
+    ).style.display = "none";
+
+    document.getElementById(
+        "appScreen"
+    ).style.display = "block";
+
+    await loadData();
+
 }
 
-async function initAuth(){
-  const {data}=await db.auth.getSession();
-  if(data.session) await startApp(data.session.user);
-  db.auth.onAuthStateChange(async (event,session)=>{
-    if(event==="SIGNED_IN" && session && !currentUser) await startApp(session.user);
-  });
-}
 
-let data={};
-let stockRows=[];
+/* =========================================================
+   EMPTY DATA
+========================================================= */
 
 function emptyData(){
- data={};
- materials.forEach(m=>{
-   data[m]={};
-   sizes.forEach(s=>data[m][s]={stock:INITIAL,history:[]});
- });
+
+    data = {};
+
+    materials.forEach(material => {
+
+        data[material] = {};
+
+        sizes.forEach(size => {
+
+            data[material][size] = {
+
+                stock: INITIAL,
+
+                history: []
+
+            };
+
+        });
+
+    });
+
 }
 
-function fmt(n){return Number(n||0).toFixed(2).replace(/\.00$/,"")}
+
+/* =========================================================
+   LOAD DATA
+========================================================= */
 
 async function loadData(){
- try{
-   const [stockRes,txRes]=await Promise.all([
-     db.from("banner_stock").select("id,ukuran_cm,rol,meter_per_rol,stok_awal,stok_meter"),
-     db.from("banner_transactions").select("id,ukuran_cm,rol,jenis,meter,keterangan,sisa_stok,created_at").order("created_at",{ascending:true})
-   ]);
-   if(stockRes.error) throw stockRes.error;
-   if(txRes.error) throw txRes.error;
 
-   stockRows=stockRes.data||[];
-   emptyData();
+    showLoading(
+        "Mengambil data stok..."
+    );
 
-   stockRows.forEach(r=>{
-     const m=String(r.ukuran_cm);
-     const idx=Number(r.rol)-1;
-     if(data[m] && sizes[idx]) data[m][sizes[idx]].stock=Number(r.stok_meter ?? r.stok_awal ?? INITIAL);
-   });
+    try{
 
-   (txRes.data||[]).forEach(t=>{
-     const m=String(t.ukuran_cm);
-     const idx=Number(t.rol)-1;
-     const s=sizes[idx];
-     if(data[m] && s){
-       data[m][s].history.push({
-         date:new Date(t.created_at).toLocaleString("id-ID"),
-         amount:t.jenis==="reset"?"RESET":Number(t.meter||0),
-         purpose:t.keterangan||"",
-         remaining:Number(t.sisa_stok ?? 0)
-       });
-     }
-   });
+        const [
+            stockRes,
+            txRes
+        ] =
+        await Promise.all([
 
-   render();
- }catch(err){
-   console.error(err);
-   alert("Gagal mengambil data dari Supabase. Cek koneksi dan pengaturan tabel/RLS.");
- }
+            db
+            .from("banner_stock")
+            .select(
+                "id,ukuran_cm,rol,meter_per_rol,stok_awal,stok_meter"
+            ),
+
+            db
+            .from("banner_transactions")
+            .select(
+                "id,ukuran_cm,rol,jenis,meter,keterangan,sisa_stok,created_at"
+            )
+            .order(
+                "created_at",
+                {
+                    ascending:true
+                }
+            )
+
+        ]);
+
+
+        if(stockRes.error)
+            throw stockRes.error;
+
+        if(txRes.error)
+            throw txRes.error;
+
+
+        stockRows =
+            stockRes.data || [];
+
+        emptyData();
+
+
+        /* STOCK */
+
+        stockRows.forEach(row => {
+
+            const material =
+                String(row.ukuran_cm);
+
+            const index =
+                Number(row.rol) - 1;
+
+            if(
+                data[material] &&
+                sizes[index]
+            ){
+
+                data[material][
+                    sizes[index]
+                ].stock =
+                    Number(
+                        row.stok_meter ??
+                        row.stok_awal ??
+                        INITIAL
+                    );
+
+            }
+
+        });
+
+
+        /* HISTORY */
+
+        (txRes.data || [])
+        .forEach(transaction => {
+
+            const material =
+                String(
+                    transaction.ukuran_cm
+                );
+
+            const index =
+                Number(transaction.rol) - 1;
+
+            const size =
+                sizes[index];
+
+            if(
+                data[material] &&
+                size
+            ){
+
+                data[material][size]
+                    .history
+                    .push({
+
+                        date:
+                            new Date(
+                                transaction.created_at
+                            ).toLocaleString(
+                                "id-ID"
+                            ),
+
+                        amount:
+                            transaction.jenis === "reset"
+                            ? "RESET"
+                            : Number(
+                                transaction.meter || 0
+                            ),
+
+                        purpose:
+                            transaction.keterangan || "",
+
+                        remaining:
+                            Number(
+                                transaction.sisa_stok ?? 0
+                            )
+
+                    });
+
+            }
+
+        });
+
+
+        render();
+
+    }catch(error){
+
+        console.error(error);
+
+        showToast(
+            "Gagal mengambil data dari Supabase.",
+            "error"
+        );
+
+        alert(
+            "Gagal mengambil data dari Supabase.\n\n" +
+            "Cek koneksi, nama tabel, RPC, dan pengaturan RLS."
+        );
+
+    }finally{
+
+        hideLoading();
+
+    }
+
 }
+
+
+/* =========================================================
+   CALCULATE TOTAL
+========================================================= */
+
+function calculateTotals(){
+
+    let totalAwal = 0;
+
+    let totalSisa = 0;
+
+    let totalRol = 0;
+
+
+    stockRows.forEach(row => {
+
+        totalAwal += Number(
+            row.meter_per_rol ??
+            row.stok_awal ??
+            INITIAL
+        );
+
+        totalRol++;
+
+    });
+
+
+    materials.forEach(material => {
+
+        sizes.forEach(size => {
+
+            totalSisa += Number(
+                data[material][size].stock || 0
+            );
+
+        });
+
+    });
+
+
+    /*
+       Jika tabel belum mengembalikan data,
+       gunakan 12 rol × 70 meter.
+    */
+
+    if(totalAwal === 0){
+
+        totalAwal =
+            materials.length *
+            sizes.length *
+            INITIAL;
+
+        totalRol =
+            materials.length *
+            sizes.length;
+
+    }
+
+
+    const totalPakai =
+        Math.max(
+            0,
+            totalAwal - totalSisa
+        );
+
+
+    return {
+        totalAwal,
+        totalSisa,
+        totalPakai,
+        totalRol
+    };
+
+}
+
+
+/* =========================================================
+   RENDER
+========================================================= */
 
 function render(){
- let total=0;
- materials.forEach(m=>sizes.forEach(s=>total+=Number(data[m][s].stock||0)));
- document.getElementById("totalSisa").textContent=fmt(total)+" m";
- document.getElementById("totalPakai").textContent=fmt(840-total)+" m";
- const wrap=document.getElementById("materials");
- wrap.innerHTML="";
- materials.forEach(m=>{
-   let mt=0;sizes.forEach(s=>mt+=Number(data[m][s].stock||0));
-   let section=document.createElement("section");section.className="material";
-   section.innerHTML=`<div class="material-title"><h2>BAHAN ${m}</h2><div class="total-material">Total tersisa: ${fmt(mt)} m</div></div><div class="grid"></div>`;
-   wrap.appendChild(section);
-   const grid=section.querySelector(".grid");
-   sizes.forEach(s=>{
-     const item=data[m][s];
-     const pct=Math.max(0,Math.min(100,item.stock/INITIAL*100));
-     const cls=pct<=0?"empty":pct<=25?"low":"";
-     grid.innerHTML+=`
-     <div class="card">
-       <span class="badge">ROL ${s}</span>
-       <h3>Banner ${m}</h3>
-       <div class="stock">${fmt(item.stock)} <span class="unit">meter</span></div>
-       <div class="meter"><div class="bar ${cls}" style="width:${pct}%"></div></div>
-       <small>${fmt(pct)}% dari 70 meter tersisa</small>
-       <label>Panjang pemakaian (meter)</label>
-       <input id="input-${m}-${s}" type="number" min="0.01" max="${item.stock}" step="0.01" placeholder="Contoh: 2.5">
-       <label>Keterangan / Banner untuk apa?</label>
-       <input id="purpose-${m}-${s}" type="text" maxlength="100" placeholder="Contoh: Banner Toko / Nama Pelanggan">
-       <button class="use" onclick="useStock('${m}','${s}')">➖ Kurangi Stok & Simpan</button>
-       ${currentRole==="admin"?`<button class="reset" onclick="resetStock('${m}','${s}')">🔄 Reset ke 70 Meter</button>`:""}
-     </div>`;
-   });
- });
- renderHistory();
+
+    const totals =
+        calculateTotals();
+
+
+    document.getElementById(
+        "totalAwal"
+    ).textContent =
+        fmt(totals.totalAwal);
+
+
+    document.getElementById(
+        "totalSisa"
+    ).textContent =
+        fmt(totals.totalSisa);
+
+
+    document.getElementById(
+        "totalPakai"
+    ).textContent =
+        fmt(totals.totalPakai);
+
+
+    document.getElementById(
+        "totalRol"
+    ).textContent =
+        totals.totalRol;
+
+
+    const wrapper =
+        document.getElementById(
+            "materials"
+        );
+
+    wrapper.innerHTML = "";
+
+
+    materials.forEach(
+        (material,index) => {
+
+            let materialTotal = 0;
+
+            sizes.forEach(size => {
+
+                materialTotal +=
+                    Number(
+                        data[material][size].stock || 0
+                    );
+
+            });
+
+
+            const section =
+                document.createElement(
+                    "section"
+                );
+
+            section.className =
+                "material";
+
+
+            section.innerHTML = `
+
+                <div class="material-header">
+
+                    <div class="material-name">
+
+                        <div class="material-icon">
+                            ${index === 0 ? "📦" :
+                              index === 1 ? "🧻" :
+                              index === 2 ? "🎨" :
+                              "🏷️"}
+                        </div>
+
+                        <div>
+
+                            <h2>
+                                BAHAN ${material}
+                            </h2>
+
+                            <p>
+                                3 rol • masing-masing ${INITIAL} meter
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="material-total">
+
+                        <strong>
+                            ${fmt(materialTotal)} m
+                        </strong>
+
+                        <span>
+                            Total tersisa
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="grid"></div>
+
+            `;
+
+
+            wrapper.appendChild(
+                section
+            );
+
+
+            const grid =
+                section.querySelector(
+                    ".grid"
+                );
+
+
+            sizes.forEach(size => {
+
+                const item =
+                    data[material][size];
+
+
+                const stock =
+                    Number(
+                        item.stock || 0
+                    );
+
+
+                const percentage =
+                    Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            stock / INITIAL * 100
+                        )
+                    );
+
+
+                let statusClass =
+                    "safe";
+
+                let statusText =
+                    "AMAN";
+
+                let barClass =
+                    "";
+
+
+                if(stock <= 0){
+
+                    statusClass =
+                        "empty";
+
+                    statusText =
+                        "HABIS";
+
+                    barClass =
+                        "empty";
+
+                }else if(percentage <= 25){
+
+                    statusClass =
+                        "low";
+
+                    statusText =
+                        "MENIPIS";
+
+                    barClass =
+                        "low";
+
+                }
+
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+                card.className =
+                    "card";
+
+
+                card.innerHTML = `
+
+                    <div class="card-top">
+
+                        <span class="badge">
+                            ROL ${size}
+                        </span>
+
+                        <span class="status ${statusClass}">
+                            ${statusText}
+                        </span>
+
+                    </div>
+
+
+                    <h3>
+                        Banner ${material}
+                    </h3>
+
+
+                    <div class="stock-number">
+
+                        ${fmt(stock)}
+
+                        <span>
+                            meter
+                        </span>
+
+                    </div>
+
+
+                    <div class="meter">
+
+                        <div
+                            class="bar ${barClass}"
+                            style="width:${percentage}%"
+                        ></div>
+
+                    </div>
+
+
+                    <div class="stock-meta">
+
+                        <span>
+                            ${fmt(percentage)}% tersisa
+                        </span>
+
+                        <span>
+                            ${INITIAL} m awal
+                        </span>
+
+                    </div>
+
+
+                    <div class="form-group-small">
+
+                        <label>
+                            PANJANG PEMAKAIAN
+                        </label>
+
+                        <input
+                            id="input-${material}-${size}"
+                            type="number"
+                            min="0.01"
+                            max="${stock}"
+                            step="0.01"
+                            placeholder="Contoh: 2.5"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group-small">
+
+                        <label>
+                            KETERANGAN / UNTUK
+                        </label>
+
+                        <input
+                            id="purpose-${material}-${size}"
+                            type="text"
+                            maxlength="100"
+                            placeholder="Contoh: Banner Toko"
+                        >
+
+                    </div>
+
+
+                    <button
+                        class="use"
+                        onclick="useStock('${material}','${size}')"
+                    >
+                        ➖ Kurangi Stok
+                    </button>
+
+
+                    ${
+                        currentRole === "admin"
+                        ?
+                        `
+                        <button
+                            class="reset"
+                            onclick="resetStock('${material}','${size}')"
+                        >
+                            🔄 Reset ke 70 Meter
+                        </button>
+                        `
+                        :
+                        ""
+                    }
+
+                `;
+
+
+                grid.appendChild(
+                    card
+                );
+
+            });
+
+        }
+    );
+
+
+    renderHistory();
+
 }
 
-async function useStock(m,s){
- const input=document.getElementById(`input-${m}-${s}`);
- const purpose=document.getElementById(`purpose-${m}-${s}`);
- const amount=parseFloat(input.value);
- const ket=purpose.value.trim();
- if(!amount||amount<=0){alert("Masukkan jumlah meter yang valid.");return}
- if(amount>data[m][s].stock){alert("Stok tidak mencukupi.");return}
- if(!ket){alert("Isi keterangan banner digunakan untuk apa.");purpose.focus();return}
- try{
-   const {error}=await db.rpc("use_banner_stock",{p_ukuran_cm:Number(m),p_rol:sizes.indexOf(s)+1,p_meter:amount,p_keterangan:ket});
-   if(error) throw error;
-   input.value="";purpose.value="";
-   await loadData();
- }catch(err){
-   console.error(err);
-   alert("Gagal menyimpan pemakaian: "+(err.message||"Error Supabase"));
- }
+
+/* =========================================================
+   USE STOCK
+========================================================= */
+
+async function useStock(
+    material,
+    size
+){
+
+    const input =
+        document.getElementById(
+            `input-${material}-${size}`
+        );
+
+    const purpose =
+        document.getElementById(
+            `purpose-${material}-${size}`
+        );
+
+
+    const amount =
+        parseFloat(
+            input.value
+        );
+
+
+    const ket =
+        purpose.value.trim();
+
+
+    if(
+        !amount ||
+        amount <= 0
+    ){
+
+        showToast(
+            "Masukkan jumlah meter yang valid.",
+            "error"
+        );
+
+        input.focus();
+
+        return;
+
+    }
+
+
+    if(
+        amount >
+        data[material][size].stock
+    ){
+
+        showToast(
+            "Stok tidak mencukupi.",
+            "error"
+        );
+
+        input.focus();
+
+        return;
+
+    }
+
+
+    if(!ket){
+
+        showToast(
+            "Isi keterangan penggunaan banner.",
+            "error"
+        );
+
+        purpose.focus();
+
+        return;
+
+    }
+
+
+    showLoading(
+        "Menyimpan pemakaian..."
+    );
+
+
+    try{
+
+        const {
+            error
+        } =
+        await db.rpc(
+            "use_banner_stock",
+            {
+                p_ukuran_cm:
+                    Number(material),
+
+                p_rol:
+                    sizes.indexOf(size) + 1,
+
+                p_meter:
+                    amount,
+
+                p_keterangan:
+                    ket
+            }
+        );
+
+
+        if(error)
+            throw error;
+
+
+        input.value = "";
+
+        purpose.value = "";
+
+
+        showToast(
+            `Stok ${material} berhasil dikurangi ${fmt(amount)} meter.`,
+            "success"
+        );
+
+
+        await loadData();
+
+
+    }catch(error){
+
+        console.error(error);
+
+        showToast(
+            error.message ||
+            "Gagal menyimpan pemakaian.",
+            "error"
+        );
+
+    }finally{
+
+        hideLoading();
+
+    }
+
 }
 
-async function resetStock(m,s){
- if(currentRole!=="admin"){alert("Hanya Admin yang boleh mereset stok.");return}
- if(!confirm(`Reset stok bahan ${m} ukuran ${s} kembali menjadi 70 meter?`)) return;
- try{
-   const {error}=await db.rpc("reset_banner_stock",{p_ukuran_cm:Number(m),p_rol:sizes.indexOf(s)+1});
-   if(error) throw error;
-   await loadData();
- }catch(err){
-   console.error(err);
-   alert("Gagal mereset stok: "+(err.message||"Error Supabase"));
- }
+
+/* =========================================================
+   RESET STOCK
+========================================================= */
+
+async function resetStock(
+    material,
+    size
+){
+
+    if(
+        currentRole !== "admin"
+    ){
+
+        showToast(
+            "Hanya Admin yang dapat mereset stok.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    const confirmed =
+        confirm(
+            `Reset stok Banner ${material} - ${size} kembali menjadi 70 meter?`
+        );
+
+
+    if(!confirmed)
+        return;
+
+
+    showLoading(
+        "Mereset stok..."
+    );
+
+
+    try{
+
+        const {
+            error
+        } =
+        await db.rpc(
+            "reset_banner_stock",
+            {
+                p_ukuran_cm:
+                    Number(material),
+
+                p_rol:
+                    sizes.indexOf(size) + 1
+            }
+        );
+
+
+        if(error)
+            throw error;
+
+
+        showToast(
+            `Stok Banner ${material} ${size} berhasil direset.`,
+            "success"
+        );
+
+
+        await loadData();
+
+
+    }catch(error){
+
+        console.error(error);
+
+        showToast(
+            error.message ||
+            "Gagal mereset stok.",
+            "error"
+        );
+
+    }finally{
+
+        hideLoading();
+
+    }
+
 }
+
+
+/* =========================================================
+   GET HISTORY
+========================================================= */
 
 function getRows(){
- let rows=[];
- materials.forEach(m=>sizes.forEach(s=>data[m][s].history.forEach(h=>rows.push({
-   date:h.date,m,s,amount:h.amount,purpose:h.purpose||"",remaining:h.remaining
- }))));
- return rows;
+
+    let rows = [];
+
+
+    materials.forEach(material => {
+
+        sizes.forEach(size => {
+
+            data[material][size]
+                .history
+                .forEach(history => {
+
+                    rows.push({
+
+                        date:
+                            history.date,
+
+                        material:
+                            material,
+
+                        size:
+                            size,
+
+                        amount:
+                            history.amount,
+
+                        purpose:
+                            history.purpose || "",
+
+                        remaining:
+                            history.remaining
+
+                    });
+
+                });
+
+        });
+
+    });
+
+
+    return rows;
+
 }
+
+
+/* =========================================================
+   RENDER HISTORY
+========================================================= */
 
 function renderHistory(){
- const rows=getRows();
- const tbody=document.getElementById("history");
- tbody.innerHTML=rows.map((h,i)=>`
- <tr><td>${i+1}</td><td>${h.date}</td><td>Banner ${h.m}</td><td>${h.s}</td>
- <td>${h.amount==="RESET"?"RESET":"-"+fmt(h.amount)+" m"}</td>
- <td>${escapeHtml(h.purpose)}</td><td>${fmt(h.remaining)} m</td></tr>`).join("");
- document.getElementById("empty").style.display=rows.length?"none":"block";
+
+    const rows =
+        getRows();
+
+
+    const tbody =
+        document.getElementById(
+            "history"
+        );
+
+
+    tbody.innerHTML =
+        rows
+        .map(
+            (row,index) => {
+
+                const isReset =
+                    row.amount === "RESET";
+
+
+                return `
+
+                    <tr>
+
+                        <td>
+                            ${index + 1}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(row.date)}
+                        </td>
+
+                        <td>
+                            <strong>
+                                Banner ${escapeHtml(row.material)}
+                            </strong>
+                        </td>
+
+                        <td>
+                            ${escapeHtml(row.size)}
+                        </td>
+
+                        <td class="${
+                            isReset
+                            ? "reset-row"
+                            : "usage"
+                        }">
+
+                            ${
+                                isReset
+                                ? "🔄 RESET"
+                                : "-" +
+                                  fmt(row.amount) +
+                                  " m"
+                            }
+
+                        </td>
+
+                        <td>
+                            ${escapeHtml(row.purpose)}
+                        </td>
+
+                        <td class="remaining">
+                            ${fmt(row.remaining)} m
+                        </td>
+
+                    </tr>
+
+                `;
+
+            }
+        )
+        .join("");
+
+
+    document.getElementById(
+        "empty"
+    ).style.display =
+        rows.length
+        ? "none"
+        : "block";
+
 }
 
-function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+
+/* =========================================================
+   EXPORT EXCEL
+========================================================= */
 
 function exportExcel(){
- const rows=getRows();
- if(!rows.length){alert("Belum ada data pemakaian untuk diexport.");return}
- const excelRows=rows.map((h,i)=>({
-   "No":i+1,"Tanggal":h.date,"Bahan":"Banner "+h.m,"Ukuran":h.s,
-   "Pemakaian":h.amount==="RESET"?"RESET":Number(h.amount),
-   "Keterangan / Untuk":h.purpose,"Sisa Stok (Meter)":Number(h.remaining)
- }));
- const ws=XLSX.utils.json_to_sheet(excelRows);
- ws["!cols"]=[{wch:6},{wch:22},{wch:15},{wch:14},{wch:15},{wch:35},{wch:18}];
- const wb=XLSX.utils.book_new();
- XLSX.utils.book_append_sheet(wb,ws,"Riwayat Stok");
- const summary=materials.map(m=>({
-   "Bahan":"Banner "+m,"Stok Awal (m)":210,
-   "Stok Tersisa (m)":sumMaterial(m),"Terpakai (m)":210-sumMaterial(m)
- }));
- const ws2=XLSX.utils.json_to_sheet(summary);
- ws2["!cols"]=[{wch:18},{wch:18},{wch:20},{wch:18}];
- XLSX.utils.book_append_sheet(wb,ws2,"Ringkasan Stok");
- XLSX.writeFile(wb,"Laporan_Stok_Banner.xlsx");
+
+    const rows =
+        getRows();
+
+
+    if(!rows.length){
+
+        showToast(
+            "Belum ada data untuk diexport.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    const excelRows =
+        rows.map(
+            (row,index) => ({
+
+                "No":
+                    index + 1,
+
+                "Tanggal":
+                    row.date,
+
+                "Bahan":
+                    "Banner " +
+                    row.material,
+
+                "Ukuran":
+                    row.size,
+
+                "Pemakaian":
+                    row.amount === "RESET"
+                    ? "RESET"
+                    : Number(
+                        row.amount
+                    ),
+
+                "Keterangan / Untuk":
+                    row.purpose,
+
+                "Sisa Stok (Meter)":
+                    Number(
+                        row.remaining
+                    )
+
+            })
+        );
+
+
+    const worksheet =
+        XLSX.utils.json_to_sheet(
+            excelRows
+        );
+
+
+    worksheet["!cols"] = [
+
+        {wch:6},
+        {wch:22},
+        {wch:15},
+        {wch:14},
+        {wch:15},
+        {wch:35},
+        {wch:20}
+
+    ];
+
+
+    const workbook =
+        XLSX.utils.book_new();
+
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Riwayat Stok"
+    );
+
+
+    const summary =
+        materials.map(
+            material => {
+
+                const stock =
+                    sumMaterial(
+                        material
+                    );
+
+                return {
+
+                    "Bahan":
+                        "Banner " +
+                        material,
+
+                    "Stok Awal (m)":
+                        INITIAL *
+                        sizes.length,
+
+                    "Stok Tersisa (m)":
+                        stock,
+
+                    "Terpakai (m)":
+                        (
+                            INITIAL *
+                            sizes.length
+                        ) -
+                        stock
+
+                };
+
+            }
+        );
+
+
+    const worksheet2 =
+        XLSX.utils.json_to_sheet(
+            summary
+        );
+
+
+    worksheet2["!cols"] = [
+
+        {wch:18},
+        {wch:18},
+        {wch:20},
+        {wch:18}
+
+    ];
+
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet2,
+        "Ringkasan Stok"
+    );
+
+
+    XLSX.writeFile(
+        workbook,
+        "Laporan_Stok_Banner.xlsx"
+    );
+
+
+    showToast(
+        "Laporan Excel berhasil dibuat.",
+        "success"
+    );
+
 }
 
-function sumMaterial(m){let n=0;sizes.forEach(s=>n+=Number(data[m][s].stock||0));return n}
+
+/* =========================================================
+   SUM MATERIAL
+========================================================= */
+
+function sumMaterial(
+    material
+){
+
+    let total = 0;
+
+
+    sizes.forEach(size => {
+
+        total +=
+            Number(
+                data[material][size].stock || 0
+            );
+
+    });
+
+
+    return total;
+
+}
+
+
+/* =========================================================
+   CLEAR HISTORY
+========================================================= */
 
 async function clearHistory(){
- if(currentRole!=="admin"){alert("Hanya Admin yang boleh menghapus riwayat.");return}
- if(!confirm("Hapus semua riwayat pemakaian? Stok tidak akan berubah.")) return;
- try{
-   const {error}=await db.rpc("clear_banner_history");
-   if(error) throw error;
-   await loadData();
- }catch(err){
-   console.error(err);
-   alert("Gagal menghapus riwayat: "+(err.message||"Error Supabase"));
- }
+
+    if(
+        currentRole !== "admin"
+    ){
+
+        showToast(
+            "Hanya Admin yang dapat menghapus riwayat.",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+    const confirmed =
+        confirm(
+            "Hapus SEMUA riwayat pemakaian?\n\nStok tidak akan berubah."
+        );
+
+
+    if(!confirmed)
+        return;
+
+
+    showLoading(
+        "Menghapus riwayat..."
+    );
+
+
+    try{
+
+        const {
+            error
+        } =
+        await db.rpc(
+            "clear_banner_history"
+        );
+
+
+        if(error)
+            throw error;
+
+
+        showToast(
+            "Semua riwayat berhasil dihapus.",
+            "success"
+        );
+
+
+        await loadData();
+
+
+    }catch(error){
+
+        console.error(error);
+
+        showToast(
+            error.message ||
+            "Gagal menghapus riwayat.",
+            "error"
+        );
+
+    }finally{
+
+        hideLoading();
+
+    }
+
 }
 
+
+/* =========================================================
+   ENTER KEY LOGIN
+========================================================= */
+
+document
+.getElementById("authPassword")
+.addEventListener(
+    "keydown",
+    event => {
+
+        if(
+            event.key === "Enter"
+        ){
+
+            login();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   AUTH INITIALIZATION
+========================================================= */
+
+async function initAuth(){
+
+    try{
+
+        const {
+            data
+        } =
+        await db.auth.getSession();
+
+
+        if(
+            data.session
+        ){
+
+            await startApp(
+                data.session.user
+            );
+
+        }
+
+
+        db.auth.onAuthStateChange(
+            async (
+                event,
+                session
+            ) => {
+
+                if(
+                    event === "SIGNED_IN" &&
+                    session &&
+                    !currentUser
+                ){
+
+                    await startApp(
+                        session.user
+                    );
+
+                }
+
+            }
+        );
+
+
+    }catch(error){
+
+        console.error(
+            "Auth error:",
+            error
+        );
+
+        setAuthMsg(
+            "Gagal menghubungkan ke sistem."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
 initAuth();
+
 </script>
+
 </body>
 </html>
