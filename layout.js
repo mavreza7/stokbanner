@@ -1,0 +1,1 @@
+export const metadata={title:'BannerPrint Pro'}; export default function Layout({children}){return <html lang="id"><body style={{margin:0,fontFamily:'Arial'}}>{children}</body></html>}
